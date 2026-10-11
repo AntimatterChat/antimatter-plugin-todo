@@ -13,7 +13,6 @@ import (
 	"github.com/mattermost/mattermost/server/public/model"
 	"github.com/mattermost/mattermost/server/public/plugin"
 	"github.com/mattermost/mattermost/server/public/pluginapi"
-	"github.com/mattermost/mattermost/server/public/pluginapi/experimental/telemetry"
 	"github.com/pkg/errors"
 )
 
@@ -72,9 +71,6 @@ type Plugin struct {
 	configuration *configuration
 
 	listManager ListManager
-
-	telemetryClient telemetry.Client
-	tracker         telemetry.Tracker
 }
 
 func (p *Plugin) OnActivate() error {
@@ -101,23 +97,7 @@ func (p *Plugin) OnActivate() error {
 
 	p.initializeAPI()
 
-	p.telemetryClient, err = telemetry.NewRudderClient()
-	if err != nil {
-		p.API.LogWarn("telemetry client not started", "error", err.Error())
-	}
-
 	return p.API.RegisterCommand(getCommand())
-}
-
-func (p *Plugin) OnDeactivate() error {
-	if p.telemetryClient != nil {
-		err := p.telemetryClient.Close()
-		if err != nil {
-			p.API.LogWarn("OnDeactivate: failed to close telemetryClient", "error", err.Error())
-		}
-	}
-
-	return nil
 }
 
 func (p *Plugin) initializeAPI() {
@@ -130,7 +110,6 @@ func (p *Plugin) initializeAPI() {
 	p.router.HandleFunc("/complete", p.checkAuth(p.handleComplete)).Methods(http.MethodPost)
 	p.router.HandleFunc("/accept", p.checkAuth(p.handleAccept)).Methods(http.MethodPost)
 	p.router.HandleFunc("/bump", p.checkAuth(p.handleBump)).Methods(http.MethodPost)
-	p.router.HandleFunc("/telemetry", p.checkAuth(p.handleTelemetry)).Methods(http.MethodPost)
 	p.router.HandleFunc("/config", p.checkAuth(p.handleConfig)).Methods(http.MethodGet)
 	p.router.HandleFunc("/edit", p.checkAuth(p.handleEdit)).Methods(http.MethodPut)
 	p.router.HandleFunc("/change_assignment", p.checkAuth(p.handleChangeAssignment)).Methods(http.MethodPost)
@@ -173,27 +152,6 @@ func (p *Plugin) checkAuth(handler http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func (p *Plugin) handleTelemetry(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("Mattermost-User-ID")
-
-	telemetryRequest, err := GetTelemetryPayloadFromJSON(r.Body)
-	if err != nil {
-		msg := "Unable to get telemetry payload from JSON"
-		p.API.LogError(msg, "err", err.Error())
-		p.handleErrorWithCode(w, http.StatusBadRequest, msg, err)
-		return
-	}
-
-	if err = telemetryRequest.IsValid(); err != nil {
-		p.handleErrorWithCode(w, http.StatusBadRequest, "Unable to validate telemetry payload.", err)
-		return
-	}
-
-	if telemetryRequest.Event != "" {
-		p.trackFrontend(userID, telemetryRequest.Event, telemetryRequest.Properties)
-	}
-}
-
 func (p *Plugin) handleAdd(w http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get("Mattermost-User-ID")
 
@@ -220,8 +178,6 @@ func (p *Plugin) handleAdd(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		p.trackAddIssue(userID, sourceWebapp, addRequest.PostID != "")
-
 		p.sendRefreshEvent(userID, []string{MyListKey})
 
 		replyMessage := fmt.Sprintf("@%s attached a todo to this thread", senderName)
@@ -245,8 +201,6 @@ func (p *Plugin) handleAdd(w http.ResponseWriter, r *http.Request) {
 			p.handleErrorWithCode(w, http.StatusInternalServerError, ErrorMsgAddIssue, err)
 			return
 		}
-
-		p.trackAddIssue(userID, sourceWebapp, addRequest.PostID != "")
 
 		p.sendRefreshEvent(userID, []string{MyListKey})
 
@@ -273,8 +227,6 @@ func (p *Plugin) handleAdd(w http.ResponseWriter, r *http.Request) {
 		p.handleErrorWithCode(w, http.StatusInternalServerError, msg, err)
 		return
 	}
-
-	p.trackSendIssue(userID, sourceWebapp, addRequest.PostID != "")
 
 	p.sendRefreshEvent(userID, []string{OutListKey})
 	p.sendRefreshEvent(receiver.Id, []string{InListKey})
@@ -326,7 +278,6 @@ func (p *Plugin) handleLists(w http.ResponseWriter, r *http.Request) {
 		lt := time.Unix(lastReminderAt/1000, 0).In(timezone)
 		if nt.Sub(lt).Hours() >= 1 && (nt.Day() != lt.Day() || nt.Month() != lt.Month() || nt.Year() != lt.Year()) {
 			p.PostBotDM(userID, "Daily Reminder:\n\n"+issuesListToString(allListIssue.My))
-			p.trackDailySummary(userID)
 			err = p.saveLastReminderTimeForUser(userID)
 			if err != nil {
 				p.API.LogError("Unable to save last reminder for user err=" + err.Error())
@@ -372,7 +323,6 @@ func (p *Plugin) handleEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.trackEditIssue(userID)
 	p.sendRefreshEvent(userID, []string{list})
 
 	if foreignUserID != "" {
@@ -422,8 +372,6 @@ func (p *Plugin) handleChangeAssignment(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	p.trackChangeAssignment(userID)
-
 	p.sendRefreshEvent(userID, []string{MyListKey, OutListKey})
 
 	userName := p.listManager.GetUserName(userID)
@@ -463,8 +411,6 @@ func (p *Plugin) handleAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.trackAcceptIssue(userID)
-
 	p.sendRefreshEvent(userID, []string{MyListKey, InListKey})
 	p.sendRefreshEvent(sender, []string{OutListKey})
 
@@ -498,8 +444,6 @@ func (p *Plugin) handleComplete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	p.sendRefreshEvent(userID, []string{listToUpdate})
-
-	p.trackCompleteIssue(userID)
 
 	userName := p.listManager.GetUserName(userID)
 	replyMessage := fmt.Sprintf("@%s completed a todo attached to this thread", userName)
@@ -543,8 +487,6 @@ func (p *Plugin) handleRemove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p.sendRefreshEvent(userID, []string{listToUpdate})
-
-	p.trackRemoveIssue(userID)
 
 	userName := p.listManager.GetUserName(userID)
 	replyMessage := fmt.Sprintf("@%s removed a todo attached to this thread", userName)
@@ -594,8 +536,6 @@ func (p *Plugin) handleBump(w http.ResponseWriter, r *http.Request) {
 		p.handleErrorWithCode(w, http.StatusInternalServerError, msg, err)
 		return
 	}
-
-	p.trackBumpIssue(userID)
 
 	if foreignUser == "" {
 		return

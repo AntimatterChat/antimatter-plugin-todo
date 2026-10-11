@@ -3,8 +3,6 @@ package main
 import (
 	"reflect"
 
-	"github.com/mattermost/mattermost/server/public/pluginapi/experimental/bot/logger"
-	"github.com/mattermost/mattermost/server/public/pluginapi/experimental/telemetry"
 	"github.com/pkg/errors"
 )
 
@@ -96,9 +94,6 @@ func (p *Plugin) OnConfigurationChange() error {
 	if shouldUpdateClient {
 		p.sendConfigUpdateEvent()
 	}
-
-	logger := logger.New(p.API)
-	p.tracker = telemetry.NewTracker(p.telemetryClient, p.API.GetDiagnosticId(), p.API.GetServerVersion(), manifest.Id, manifest.Version, "todo", telemetry.NewTrackerConfig(p.API.GetConfig()), logger)
 
 	return nil
 }

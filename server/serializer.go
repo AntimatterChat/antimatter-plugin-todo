@@ -7,32 +7,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-type TelemetryAPIRequest struct {
-	Event      string
-	Properties map[string]interface{}
-}
-
-func GetTelemetryPayloadFromJSON(data io.Reader) (*TelemetryAPIRequest, error) {
-	body := &TelemetryAPIRequest{}
-	if err := json.NewDecoder(data).Decode(&body); err != nil {
-		return nil, err
-	}
-
-	return body, nil
-}
-
-func (t *TelemetryAPIRequest) IsValid() error {
-	if t == nil {
-		return errors.New("invalid request body")
-	}
-
-	if t.Event == "" {
-		return errors.New("event is required")
-	}
-
-	return nil
-}
-
 type AddAPIRequest struct {
 	Message       string `json:"message"`
 	PostPermalink string `json:"postPermalink"`
