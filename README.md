@@ -1,58 +1,53 @@
-# Disclaimer
+# Antimatter Todo Plugin
 
-**This repository is community supported and not maintained by Mattermost. Mattermost disclaims liability for integrations, including Third Party Integrations and Mattermost Integrations. Integrations may be modified or discontinued at any time.**
+Todo lists for [Antimatter](https://github.com/antimatterchat/antimatter): a shared list in every channel, your own
+list, and todos you send to people and receive from them, with a daily reminder.
 
-# Mattermost Todo Plugin
+<img src="assets/screenshot.png" width="440" alt="The Todo panel: the shared todo list of a channel, with an assigned todo and a done one" />
 
-[![Build Status](https://img.shields.io/circleci/project/github/mattermost/mattermost-plugin-todo/master.svg)](https://circleci.com/gh/mattermost/mattermost-plugin-todo)
-[![Code Coverage](https://img.shields.io/codecov/c/github/mattermost/mattermost-plugin-todo/master.svg)](https://codecov.io/gh/mattermost/mattermost-plugin-todo)
-[![Release](https://img.shields.io/github/v/release/mattermost/mattermost-plugin-todo)](https://github.com/antimatterchat/antimatter-plugin-todo/releases/latest)
-[![HW](https://img.shields.io/github/issues/mattermost/mattermost-plugin-todo/Up%20For%20Grabs?color=dark%20green&label=Help%20Wanted)](https://github.com/antimatterchat/antimatter-plugin-todo/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3A%22Up+For+Grabs%22+label%3A%22Help+Wanted%22)
+## Using it
 
-A plugin to track Todo issues in a list and send you daily reminders about your Todo list.
+Open **Todo** from the app bar (or the channel header). Its panel has two views:
 
-**[Help Wanted](https://github.com/antimatterchat/antimatter-plugin-todo/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3A%22up+for+grabs%22+label%3A%22help+wanted%22+sort%3Aupdated-desc)**
+- **This channel**: the channel's todo list, shared by its members. Everyone who can post in the channel adds
+  todos, checks them off, edits them, assigns them to a member and moves them to the top; their author and the
+  channel's admins delete them. Done todos are folded under the open ones. People who can only read the
+  channel (a read-only or archived one) see the list without changing it.
+- **Mine**: your own todos, the channel todos assigned to you, the todos people sent you (accept, mark as done
+  or decline them), and the ones you sent (remind the person or cancel).
 
-## Install
+A message's **Add to todo** starts a todo with its text, linked to the message, in the channel's list or your
+own. When someone assigns you a channel todo or sends you one, the Todo bot tells you, and its message lets you
+answer. Once a day, the bot reminds you of your todos and the ones assigned to you.
 
-1. Go the releases page and download the latest release.
-2. On your Mattermost, go to System Console -> Plugin Management and upload it.
-3. Start using it!
+The `/todo` command still works: `/todo add`, `/todo list [my|in|out]`, `/todo pop`, `/todo send @someone`,
+`/todo settings summary [on|off]` and `/todo settings allow_incoming_task_requests [on|off]`.
 
-## Usage
+## Installation
 
-To add an issue to your Todo list, do one one of the following:
+1. Download the latest release from https://github.com/antimatterchat/antimatter-plugin-todo/releases/latest.
+2. Upload it in **System Console > Plugins > Plugin Management**, then enable it.
 
-* Open the sidebar from the channel header and click the "Add new issue" button
-* Type `/todo add <your Todo message here>` into the textbox and send
-* Click the on the dropdown menu from a post and click "Add Todo"
-
-To view your Todo list, do one of the following:
-
-* Click on the button in the channel header to open the Todo list in the right sidebar.
-* Type `/todo list` into the textbox and send
-
-To remove an issue from your list:
-
-* Open the sidebar from the channel header and click the "Done" or "Won't Do" buttons below the issue you want to remove
-* Type `/todo pop` into the text and send to remove the top issue in the list
-
-To send an issue to another user:
-
-* Open the sidebar from the channel header and click the "Add new issue" button and select the user you want to send the issue to
-* Type `/todo send <username> <your Todo message here>` into the textbox and send
-
-Every day you will get a reminder of the issues you need to complete from the `Todo` bot. The message is only sent if you have issues on your Todo list.
+The plugin keeps its upstream ID, `com.mattermost.plugin-todo`, so the lists of an existing installation carry
+over.
 
 ## Development
 
-This plugin contains both a server and web app portion. Read our documentation about the [Developer Workflow](https://developers.mattermost.com/integrate/plugins/developer-workflow/) and [Developer Setup](https://developers.mattermost.com/integrate/plugins/developer-setup/) for more information about developing and extending plugins.
+```sh
+make dist          # builds the server for every platform, the web app, and the bundle in dist/
+make test          # Go and web app tests
+make check-style   # golangci-lint, eslint and the type checker
+```
 
-### Releasing new versions
+Set `MM_SERVICESETTINGS_ENABLEDEVELOPER=1` to build the server for your platform only.
 
-The version of a plugin is determined at compile time, automatically populating a `version` field in the [plugin manifest](plugin.json):
-* If the current commit matches a tag, the version will match after stripping any leading `v`, e.g. `1.3.1`.
-* Otherwise, the version will combine the nearest tag with `git rev-parse --short HEAD`, e.g. `1.3.1+d06e53e1`.
-* If there is no version tag, an empty version will be combined with the short hash, e.g. `0.0.0+76081421`.
+## Thanks
 
-To disable this behaviour, manually populate and maintain the `version` field.
+This plugin started as [mattermost-plugin-todo](https://github.com/mattermost/mattermost-plugin-todo), a community
+plugin of the Mattermost ecosystem. Many thanks to the Mattermost community, and to everyone who contributed to
+it, for the lists, the requests between people, the daily reminders and the `/todo` command this plugin builds
+on.
+
+## License
+
+Apache License 2.0, see [LICENSE](LICENSE).
