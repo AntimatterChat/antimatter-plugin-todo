@@ -2,8 +2,8 @@
     "id": "com.mattermost.plugin-todo",
     "name": "Todo",
     "description": "This plugin makes it easy to keep track of Todo issues and get daily reminders.",
-    "homepage_url": "https://github.com/mattermost/mattermost-plugin-todo",
-    "support_url": "https://github.com/mattermost/mattermost-plugin-todo/issues",
+    "homepage_url": "https://github.com/antimatterchat/antimatter-plugin-todo",
+    "support_url": "https://github.com/antimatterchat/antimatter-plugin-todo/issues",
     "min_server_version": "12.0.0",
     "server": {
         "executables": {

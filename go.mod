@@ -1,4 +1,4 @@
-module github.com/mattermost/mattermost-plugin-todo
+module github.com/antimatterchat/antimatter-plugin-todo
 
 go 1.22
 
