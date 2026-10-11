@@ -43,6 +43,20 @@ export type ChannelList = {
     can_edit: boolean;
     can_manage: boolean;
     todos: ChannelTodo[];
+
+    // Whether the user follows the list.
+    following?: boolean;
+};
+
+// The list of a channel the user follows: its open todos.
+export type FollowedList = {
+    channel_id: string;
+    channel_name: string;
+    channel_url_name: string;
+    team_name?: string;
+    can_edit: boolean;
+    can_manage: boolean;
+    todos: ChannelTodo[];
 };
 
 // A channel todo assigned to the user, with its channel.

@@ -1,17 +1,18 @@
 // Copyright (c) 2026-present Antimatter contributors.
 // See LICENSE for license information.
 
-import React from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {useSelector} from 'react-redux';
 
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 
 import {messages} from '../messages';
-import {setView, useTodoState} from '../state';
+import {panelClosed, panelOpened, setView, useTodoState} from '../state';
 import {cx} from '../ui/web_ui';
 
 import ChannelView from './channel_view';
+import FollowingView from './following_view';
 import MineView from './mine_view';
 
 // TodoPanel is the todo app of the right-hand panel: the current channel's shared list, or the
@@ -19,6 +20,13 @@ import MineView from './mine_view';
 export default function TodoPanel() {
     const intl = useIntl();
     const channel = useSelector(getCurrentChannel);
+
+    // Back in another channel than the one it was closed in, the panel opens on that channel's list
+    useState(() => panelOpened(channel?.id || ''));
+    const channelId = useRef(channel?.id || '');
+    channelId.current = channel?.id || '';
+    useEffect(() => () => panelClosed(channelId.current), []);
+
     const view = useTodoState((s) => s.view);
     const mineCount = useTodoState((s) => (s.personal.lists?.my.length || 0) + (s.personal.assigned?.length || 0) + (s.personal.lists?.in.length || 0));
     const conversation = channel?.type === 'D' || channel?.type === 'G';
@@ -41,6 +49,15 @@ export default function TodoPanel() {
                 <button
                     type='button'
                     role='tab'
+                    aria-selected={view === 'following'}
+                    className={view === 'following' ? cx('on') : ''}
+                    onClick={() => setView('following')}
+                >
+                    {intl.formatMessage(messages.viewFollowing)}
+                </button>
+                <button
+                    type='button'
+                    role='tab'
                     aria-selected={view === 'mine'}
                     className={view === 'mine' ? cx('on') : ''}
                     onClick={() => setView('mine')}
@@ -49,12 +66,14 @@ export default function TodoPanel() {
                     {mineCount > 0 && <span className='amt-count'>{mineCount}</span>}
                 </button>
             </div>
-            {view === 'channel' ? (
+            {view === 'channel' && (
                 <ChannelView
                     key={channel?.id}
                     channel={channel}
                 />
-            ) : <MineView/>}
+            )}
+            {view === 'following' && <FollowingView/>}
+            {view === 'mine' && <MineView/>}
         </div>
     );
 }

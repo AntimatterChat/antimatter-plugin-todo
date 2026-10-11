@@ -78,6 +78,9 @@ type ChannelPermissions struct {
 type ChannelListResponse struct {
 	ChannelPermissions
 	Todos []*ChannelTodo `json:"todos"`
+
+	// Following tells whether the person asking follows the list.
+	Following bool `json:"following"`
 }
 
 type channelTodoRequest struct {
@@ -558,6 +561,8 @@ func (p *Plugin) initChannelAPI(r *mux.Router) {
 	api.HandleFunc("/channels/{channel_id:[a-z0-9]{26}}/todos/{todo_id:[a-z0-9]{26}}", p.checkAuth(p.handleUpdateChannelTodo)).Methods(http.MethodPatch)
 	api.HandleFunc("/channels/{channel_id:[a-z0-9]{26}}/todos/{todo_id:[a-z0-9]{26}}", p.checkAuth(p.handleDeleteChannelTodo)).Methods(http.MethodDelete)
 	api.HandleFunc("/assigned", p.checkAuth(p.handleAssigned)).Methods(http.MethodGet)
+	api.HandleFunc("/following", p.checkAuth(p.handleFollowing)).Methods(http.MethodGet)
+	api.HandleFunc("/channels/{channel_id:[a-z0-9]{26}}/follow", p.checkAuth(p.handleFollow)).Methods(http.MethodPut, http.MethodDelete)
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
@@ -600,7 +605,7 @@ func (p *Plugin) handleChannelTodos(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, ChannelListResponse{ChannelPermissions: p.channelPermissions(userID, channel), Todos: todos})
+	writeJSON(w, http.StatusOK, ChannelListResponse{ChannelPermissions: p.channelPermissions(userID, channel), Todos: todos, Following: p.isFollowing(userID, channelID)})
 }
 
 func (p *Plugin) handleAddChannelTodo(w http.ResponseWriter, r *http.Request) {

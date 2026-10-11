@@ -13,6 +13,7 @@ import * as client from '../client';
 import {messages} from '../messages';
 import {refreshChannel, setDraft, useChannelList, useTodoState} from '../state';
 import type {ChannelTodo, ChannelTodoPatch} from '../types/todo';
+import Icon from '../ui/icon';
 import {cx} from '../ui/web_ui';
 
 import AddForm from './add_form';
@@ -160,6 +161,21 @@ export default function ChannelView({channel}: {channel?: Channel}) {
             <div className={cx('app-h')}>
                 <span className={cx('grow')}>{intl.formatMessage(messages.channelOpen, {channel: name})}</span>
                 <span>{open.length || ''}</span>
+                {list && (
+                    <button
+                        type='button'
+                        className={'amt-star' + (list.following ? ' amt-on' : '')}
+                        title={intl.formatMessage(list.following ? messages.unfollow : messages.follow)}
+                        aria-label={intl.formatMessage(list.following ? messages.unfollow : messages.follow)}
+                        aria-pressed={Boolean(list.following)}
+                        onClick={() => client.setFollowing(channel.id, !list.following).then(() => refreshChannel(channel.id), onError)}
+                    >
+                        <Icon
+                            name='star'
+                            size='xs'
+                        />
+                    </button>
+                )}
             </div>
             {entry?.error && !list && <div className='amt-error'>{entry.error}</div>}
             {list && !list.can_edit && <div className='amt-muted amt-note'>{intl.formatMessage(messages.channelReadOnly)}</div>}

@@ -11,6 +11,11 @@ export const messages = defineMessages({
     viewChannel: {id: 'todo.view.channel', defaultMessage: 'This channel'},
     viewConversation: {id: 'todo.view.conversation', defaultMessage: 'This conversation'},
     viewMine: {id: 'todo.view.mine', defaultMessage: 'Mine'},
+    viewFollowing: {id: 'todo.view.following', defaultMessage: 'Following'},
+    followingEmpty: {id: 'todo.following.empty', defaultMessage: 'Follow a channel\'s list (the star by its title) to find its todos here, from any channel.'},
+    followingNone: {id: 'todo.following.none', defaultMessage: 'Nothing left to do here.'},
+    follow: {id: 'todo.follow', defaultMessage: 'Follow this list'},
+    unfollow: {id: 'todo.unfollow', defaultMessage: 'Stop following this list'},
 
     channelOpen: {id: 'todo.channel.open', defaultMessage: 'Shared with {channel}'},
     channelEmpty: {id: 'todo.channel.empty', defaultMessage: 'No todos here yet. Todos added here are shared with everyone in the channel.'},

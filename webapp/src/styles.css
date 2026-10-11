@@ -108,3 +108,10 @@
 
 /* The todos of a channel's list (shared) carry the app's colour; your own lists' don't. */
 .amt-row.amt-shared { box-shadow: inset 3px 0 0 var(--amt-shared); }
+
+/* Following a channel's list: the star by its title, filled when followed. */
+.amt-star { display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--amt-muted); cursor: pointer; }
+.amt-star:hover { background: var(--amt-side); color: var(--amt-fg); }
+.amt-star.amt-on { color: #F0B232; }
+.amt-star.amt-on svg { fill: currentColor; }
+.amt-grow-link { flex: 1; min-width: 0; justify-content: flex-start; font-weight: 700; text-transform: none; letter-spacing: 0; }

@@ -18,6 +18,7 @@ const classicIcons = {
     send: 'send',
     link: 'link-variant',
     hash: 'pound',
+    star: 'star-outline',
     'pin-top': 'arrow-collapse-up',
     bell: 'bell-outline',
     chev: 'chevron-down',

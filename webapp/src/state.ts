@@ -19,7 +19,7 @@ export type Draft = {
     postPermalink: string;
 };
 
-export type View = 'channel' | 'mine';
+export type View = 'channel' | 'following' | 'mine';
 
 type State = {
     personal: Personal;
@@ -103,6 +103,20 @@ export function usePersonal() {
         }
     }, [loaded]);
     return personal;
+}
+
+// The channel the panel was closed in: opened again in another channel, it shows that channel's list.
+let closedIn: string | null = null;
+
+export function panelClosed(channelId: string) {
+    closedIn = channelId;
+}
+
+export function panelOpened(channelId: string) {
+    if (closedIn !== null && closedIn !== channelId) {
+        state = {...state, view: 'channel'};
+    }
+    closedIn = null;
 }
 
 export function setView(view: View) {

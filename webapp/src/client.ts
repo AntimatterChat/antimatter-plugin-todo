@@ -4,7 +4,7 @@
 import {Client4} from 'mattermost-redux/client';
 
 import manifest from './manifest';
-import type {AssignedTodo, ChannelList, ChannelTodo, ChannelTodoPatch, Lists} from './types/todo';
+import type {AssignedTodo, ChannelList, ChannelTodo, ChannelTodoPatch, FollowedList, Lists} from './types/todo';
 
 export class ClientError extends Error {
     status: number;
@@ -86,4 +86,13 @@ export function deleteChannelTodo(channelId: string, id: string) {
 
 export function getAssigned() {
     return request<AssignedTodo[]>('GET', '/api/v1/assigned');
+}
+
+// getFollowing gives the lists of the channels the user follows.
+export function getFollowing() {
+    return request<FollowedList[]>('GET', '/api/v1/following');
+}
+
+export function setFollowing(channelId: string, follow: boolean) {
+    return request(follow ? 'PUT' : 'DELETE', `/api/v1/channels/${channelId}/follow`);
 }
