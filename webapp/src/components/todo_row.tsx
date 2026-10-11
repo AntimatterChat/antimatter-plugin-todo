@@ -31,6 +31,9 @@ type Props = {
     // The checkbox: absent for todos that can't be checked off from here.
     onToggle?: (() => void) | null;
     meta?: React.ReactNode;
+
+    // A todo of a channel's list (shared), not of someone's own lists: marked in the app's colour.
+    shared?: boolean;
     permalink?: string;
 
     // Buttons shown on the row (e.g. Accept), and the actions of its menu.
@@ -163,7 +166,7 @@ function EditForm({message, description, onSave, onCancel}: {message: string; de
 
 // TodoRow is a todo in a list: its checkbox, text, details and the people and place it's about,
 // with its actions in a menu.
-export default function TodoRow({message, description, done, onToggle, meta, permalink, buttons, actions, onSave, editing, onEditingChange, picker}: Props) {
+export default function TodoRow({message, description, done, onToggle, meta, shared, permalink, buttons, actions, onSave, editing, onEditingChange, picker}: Props) {
     const intl = useIntl();
     const [menu, setMenu] = useState(false);
 
@@ -181,7 +184,7 @@ export default function TodoRow({message, description, done, onToggle, meta, per
     }
 
     return (
-        <div className={'amt-row' + (done ? ' amt-done' : '')}>
+        <div className={'amt-row' + (done ? ' amt-done' : '') + (shared ? ' amt-shared' : '')}>
             {onToggle ? (
                 <button
                     type='button'

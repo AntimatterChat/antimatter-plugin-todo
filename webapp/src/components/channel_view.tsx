@@ -87,6 +87,7 @@ function ChannelTodoRow({todo, channel, canEdit, canDelete, first, onError}: Row
 
     return (
         <TodoRow
+            shared={true}
             message={todo.message}
             description={todo.description}
             done={done}

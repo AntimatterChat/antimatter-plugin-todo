@@ -16,6 +16,7 @@
     --amt-bg: var(--am-main, var(--center-channel-bg));
     --amt-pop: var(--am-raise-2, var(--center-channel-bg));
     --amt-accent: var(--am-matter, var(--button-bg));
+    --amt-shared: #34D399;
     --amt-ok: var(--am-ok, #3db887);
     --amt-danger: var(--am-danger, #d24b4e);
 }
@@ -104,3 +105,6 @@
 .amt-seg.amt-seg { padding: 3px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-side); gap: 2px; }
 .amt-seg button { height: 30px; border: 0; border-radius: 7px; background: none; color: var(--amt-muted); font-weight: 600; font-size: 13.5px; cursor: pointer; }
 .amt-seg button.amt-on { background: var(--amt-raise); color: var(--amt-fg); }
+
+/* The todos of a channel's list (shared) carry the app's colour; your own lists' don't. */
+.amt-row.amt-shared { box-shadow: inset 3px 0 0 var(--amt-shared); }

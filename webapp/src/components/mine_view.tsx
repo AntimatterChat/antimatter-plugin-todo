@@ -97,6 +97,7 @@ function AssignedRow({todo, run}: {todo: AssignedTodo; run: Run}) {
     };
     return (
         <TodoRow
+            shared={true}
             message={todo.message}
             description={todo.description}
             onToggle={() => run(() => client.updateChannelTodo(todo.channel_id, todo.id, {done: true}))}
