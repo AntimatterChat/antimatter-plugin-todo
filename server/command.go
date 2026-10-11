@@ -49,7 +49,7 @@ settings summary [on, off]
 	example: /todo settings summary on
 
 settings allow_incoming_task_requests [on, off]
-	Allow other Mattermost users to send a task for you to accept/decline?
+	Allow other people to send a task for you to accept/decline?
 
 	example: /todo settings allow_incoming_task_requests on
 
@@ -442,7 +442,7 @@ func getAutocompleteData() *model.AutocompleteData {
 	summary.AddCommand(summaryOn)
 	summary.AddCommand(summaryOff)
 
-	allowIncomingTask := model.NewAutocompleteData("allow_incoming_task_requests", "[on] [off]", "Allow other Mattermost users to send a task for you to accept/decline?")
+	allowIncomingTask := model.NewAutocompleteData("allow_incoming_task_requests", "[on] [off]", "Allow other people to send a task for you to accept/decline?")
 	allowIncomingTaskOn := model.NewAutocompleteData("on", "", "Allow others to send you a Task, you can accept/decline")
 	allowIncomingTaskOff := model.NewAutocompleteData("off", "", "Block others from sending you a Task, they will see a message saying you don't accept Todo requests")
 	allowIncomingTask.AddCommand(allowIncomingTaskOn)
