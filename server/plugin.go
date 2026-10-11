@@ -20,9 +20,6 @@ const (
 	// WSEventRefresh is the WebSocket event for refreshing the Todo list
 	WSEventRefresh = "refresh"
 
-	// WSEventConfigUpdate is the WebSocket event to update the Todo list's configurations on webapp
-	WSEventConfigUpdate = "config_update"
-
 	ErrorMsgAddIssue = "Unable to add issue"
 )
 
@@ -110,7 +107,6 @@ func (p *Plugin) initializeAPI() {
 	p.router.HandleFunc("/complete", p.checkAuth(p.handleComplete)).Methods(http.MethodPost)
 	p.router.HandleFunc("/accept", p.checkAuth(p.handleAccept)).Methods(http.MethodPost)
 	p.router.HandleFunc("/bump", p.checkAuth(p.handleBump)).Methods(http.MethodPost)
-	p.router.HandleFunc("/config", p.checkAuth(p.handleConfig)).Methods(http.MethodGet)
 	p.router.HandleFunc("/edit", p.checkAuth(p.handleEdit)).Methods(http.MethodPut)
 	p.router.HandleFunc("/change_assignment", p.checkAuth(p.handleChangeAssignment)).Methods(http.MethodPost)
 
@@ -197,7 +193,7 @@ func (p *Plugin) handleAdd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if receiver.Id == userID {
-		_, err = p.listManager.AddIssue(userID, addRequest.Message, addRequest.Description, addRequest.PostID, addRequest.PostPermalink)
+		_, err = p.listManager.AddIssue(userID, addRequest.Message, addRequest.PostPermalink, addRequest.Description, addRequest.PostID)
 		if err != nil {
 			p.API.LogError(ErrorMsgAddIssue, "err", err.Error())
 			p.handleErrorWithCode(w, http.StatusInternalServerError, ErrorMsgAddIssue, err)
@@ -556,54 +552,11 @@ func (p *Plugin) handleBump(w http.ResponseWriter, r *http.Request) {
 	p.PostBotCustomDM(foreignUser, message, todo.Message, todo.PostPermalink, foreignIssueID)
 }
 
-// API endpoint to retrieve plugin configurations
-func (p *Plugin) handleConfig(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		return
-	}
-
-	if p.configuration != nil {
-		// retrieve client only configurations
-		clientConfig := struct {
-			HideTeamSidebar bool `json:"hide_team_sidebar"`
-		}{
-			HideTeamSidebar: p.configuration.HideTeamSidebar,
-		}
-
-		configJSON, err := json.Marshal(clientConfig)
-		if err != nil {
-			msg := "Unable to marshal plugin configuration to json"
-			p.API.LogError(msg, "err", err.Error())
-			p.handleErrorWithCode(w, http.StatusInternalServerError, msg, err)
-			return
-		}
-
-		_, err = w.Write(configJSON)
-		if err != nil {
-			p.API.LogError("Unable to write json response err=" + err.Error())
-		}
-	}
-}
-
 func (p *Plugin) sendRefreshEvent(userID string, lists []string) {
 	p.API.PublishWebSocketEvent(
 		WSEventRefresh,
 		map[string]interface{}{"lists": lists},
 		&model.WebsocketBroadcast{UserId: userID},
-	)
-}
-
-// Publish a WebSocket event to update the client config of the plugin on the webapp end.
-func (p *Plugin) sendConfigUpdateEvent() {
-	clientConfigMap := map[string]interface{}{
-		"hide_team_sidebar": p.configuration.HideTeamSidebar,
-	}
-
-	p.API.PublishWebSocketEvent(
-		WSEventConfigUpdate,
-		clientConfigMap,
-		&model.WebsocketBroadcast{},
 	)
 }
 

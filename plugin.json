@@ -16,19 +16,5 @@
     },
     "webapp": {
         "bundle_path": "webapp/dist/main.js"
-    },
-    "settings_schema": {
-        "header": "",
-        "footer": "",
-        "settings": [
-            {
-                "key": "hide_team_sidebar",
-                "display_name": "Hide team sidebar buttons:",
-                "type": "bool",
-                "help_text": "When true, the buttons in the team sidebar on the left toolbar will be hidden.",
-                "placeholder": "",
-                "default": null
-            }
-        ]
     }
 }
