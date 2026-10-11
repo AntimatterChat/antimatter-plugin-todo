@@ -1,42 +1,11 @@
-const exec = require('child_process').exec;
+// Copyright (c) 2019-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE for license information.
 
-const path = require('path');
-
-const PLUGIN_ID = require('../plugin.json').id;
-
-const NPM_TARGET = process.env.npm_lifecycle_event; //eslint-disable-line no-process-env
-let mode = 'production';
-let devtool = false;
-if (NPM_TARGET === 'debug' || NPM_TARGET === 'debug:watch') {
-    mode = 'development';
-    devtool = 'source-map';
-}
-
-const plugins = [];
-if (NPM_TARGET === 'build:watch' || NPM_TARGET === 'debug:watch') {
-    plugins.push({
-        apply: (compiler) => {
-            compiler.hooks.watchRun.tap('WatchStartPlugin', () => {
-                // eslint-disable-next-line no-console
-                console.log('Change detected. Rebuilding webapp.');
-            });
-            compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
-                exec('cd .. && make deploy-from-watch', (err, stdout, stderr) => {
-                    if (stdout) {
-                        process.stdout.write(stdout);
-                    }
-                    if (stderr) {
-                        process.stderr.write(stderr);
-                    }
-                });
-            });
-        },
-    });
-}
+var path = require('path');
 
 module.exports = {
     entry: [
-        './src/index.js',
+        './src/index.tsx',
     ],
     resolve: {
         modules: [
@@ -44,7 +13,7 @@ module.exports = {
             'node_modules',
             path.resolve(__dirname),
         ],
-        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        extensions: ['*', '.js', '.jsx', '.ts', '.tsx'],
     },
     module: {
         rules: [
@@ -61,19 +30,13 @@ module.exports = {
                 },
             },
             {
-                test: /\.scss$/,
+                test: /\.css$/,
                 use: [
-                    'style-loader',
                     {
-                        loader: 'css-loader',
+                        loader: 'style-loader',
                     },
                     {
-                        loader: 'sass-loader',
-                        options: {
-                            sassOptions: {
-                                includePaths: ['node_modules/compass-mixins/lib', 'sass'],
-                            },
-                        },
+                        loader: 'css-loader',
                     },
                 ],
             },
@@ -87,18 +50,11 @@ module.exports = {
         'react/jsx-dev-runtime': 'ReactJSXDevRuntime',
         redux: 'Redux',
         'react-redux': 'ReactRedux',
-        'prop-types': 'PropTypes',
-        'react-bootstrap': 'ReactBootstrap',
-        'react-router-dom': 'ReactRouterDom',
+        'react-intl': 'ReactIntl',
     },
     output: {
-        devtoolNamespace: PLUGIN_ID,
         path: path.join(__dirname, '/dist'),
         publicPath: '/',
         filename: 'main.js',
-        clean: true,
     },
-    devtool,
-    mode,
-    plugins,
 };

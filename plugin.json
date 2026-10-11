@@ -1,9 +1,10 @@
 {
     "id": "com.mattermost.plugin-todo",
     "name": "Todo",
-    "description": "This plugin makes it easy to keep track of Todo issues and get daily reminders.",
+    "description": "Todo lists: your own, the ones you send and receive, and a shared list for every channel.",
     "homepage_url": "https://github.com/antimatterchat/antimatter-plugin-todo",
     "support_url": "https://github.com/antimatterchat/antimatter-plugin-todo/issues",
+    "icon_path": "assets/icon.svg",
     "min_server_version": "12.0.0",
     "server": {
         "executables": {

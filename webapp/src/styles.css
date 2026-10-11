@@ -1,0 +1,106 @@
+/*
+ * Copyright (c) 2026-present Antimatter contributors.
+ * See LICENSE for license information.
+ *
+ * Under Fusion, the panel uses Fusion's app panel classes (am-app-panel, am-app-h, am-seg...); under
+ * the classic UI, their amt- equivalents below. The todo rows, forms and menus are the plugin's own,
+ * in either UI's colors.
+ */
+
+.amt-panel, .amt-post, .amt-picker, .amt-menu {
+    --amt-fg: var(--am-text, var(--center-channel-color));
+    --amt-muted: var(--am-muted, rgba(var(--center-channel-color-rgb), 0.64));
+    --amt-side: var(--am-side, rgba(var(--center-channel-color-rgb), 0.04));
+    --amt-raise: var(--am-raise, rgba(var(--center-channel-color-rgb), 0.08));
+    --amt-line: var(--am-line, rgba(var(--center-channel-color-rgb), 0.16));
+    --amt-bg: var(--am-main, var(--center-channel-bg));
+    --amt-pop: var(--am-raise-2, var(--center-channel-bg));
+    --amt-accent: var(--am-matter, var(--button-bg));
+    --amt-ok: var(--am-ok, #3db887);
+    --amt-danger: var(--am-danger, #d24b4e);
+}
+
+/* The panel */
+.amt-panel { color: var(--amt-fg); font-size: 14px; }
+.amt-panel button { font: inherit; }
+.amt-seg { display: flex; }
+.amt-seg button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.amt-count { min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--amt-accent); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+.amt-toggle { width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
+.amt-list { display: grid; gap: 6px; }
+.amt-empty { padding: 14px 10px; border-radius: 9px; background: var(--amt-side); color: var(--amt-muted); font-size: 13px; text-align: center; }
+.amt-note { font-size: 12.5px; }
+.amt-muted { color: var(--amt-muted); }
+.amt-error { padding: 7px 10px; border-radius: 8px; background: color-mix(in srgb, var(--amt-danger) 12%, transparent); color: var(--amt-danger); font-size: 13px; }
+
+/* Rows */
+.amt-row { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 9px 8px 9px 10px; border-radius: 9px; background: var(--amt-side); }
+.amt-row:hover { background: var(--amt-raise); }
+.amt-row-editing { display: block; }
+.amt-check { display: grid; place-items: center; width: 18px; height: 18px; margin-top: 1px; padding: 0; border: 2px solid var(--amt-muted); border-radius: 5px; background: none; color: #fff; cursor: pointer; }
+.amt-check:hover { border-color: var(--amt-accent); }
+.amt-check[aria-checked='true'] { border-color: var(--amt-ok); background: var(--amt-ok); }
+.amt-check svg, .amt-check i { width: 12px; height: 12px; font-size: 12px; }
+.amt-bullet { width: 6px; height: 6px; margin: 7px 6px 0; border-radius: 50%; background: var(--amt-muted); }
+.amt-body { min-width: 0; }
+.amt-text { overflow-wrap: anywhere; line-height: 1.4; }
+.amt-text p, .amt-desc p { margin: 0; }
+.amt-done .amt-text { color: var(--amt-muted); text-decoration: line-through; }
+.amt-desc { margin-top: 3px; color: var(--amt-muted); font-size: 13px; overflow-wrap: anywhere; }
+.amt-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 5px; color: var(--amt-muted); font-size: 12px; }
+.amt-meta a, .amt-link { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: none; color: var(--amt-accent); font-size: 12px; text-decoration: none; cursor: pointer; }
+.amt-meta a:hover, .amt-link:hover { text-decoration: underline; }
+.amt-who { display: inline-flex; align-items: center; gap: 5px; }
+.amt-avatar { flex: none; border-radius: 50%; object-fit: cover; }
+.amt-row-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.amt-row-menu { position: relative; }
+
+/* Buttons and menus */
+.amt-btn { height: 32px; padding: 0 12px; border: 1px solid var(--amt-line); border-radius: 8px; background: var(--amt-raise); color: var(--amt-fg); font-weight: 600; font-size: 13px; cursor: pointer; }
+.amt-btn:hover { border-color: var(--amt-muted); }
+.amt-btn.amt-primary { border-color: var(--amt-accent); background: var(--amt-accent); color: #fff; }
+.amt-btn.amt-danger { color: var(--amt-danger); }
+.amt-btn.amt-small { height: 28px; padding: 0 10px; font-size: 12.5px; }
+.amt-btn:disabled { opacity: 0.5; cursor: default; }
+.amt-icon-btn { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 7px; background: none; color: var(--amt-muted); cursor: pointer; }
+.amt-icon-btn:hover { background: var(--amt-raise); color: var(--amt-fg); }
+.amt-icon-btn.amt-tiny { width: 20px; height: 20px; }
+.amt-menu { position: absolute; top: 30px; right: 0; z-index: 20; display: grid; min-width: 180px; padding: 5px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-pop); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); }
+.amt-menu button { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 0; border-radius: 7px; background: none; color: var(--amt-fg); font-size: 13px; text-align: left; cursor: pointer; }
+.amt-menu button:hover { background: var(--amt-raise); }
+.amt-menu .amt-danger { color: var(--amt-danger); }
+
+/* Forms */
+.amt-add, .amt-edit { position: relative; display: grid; gap: 8px; }
+.amt-add-row { display: flex; gap: 8px; }
+.amt-add input, .amt-add textarea, .amt-edit input, .amt-edit textarea, .amt-picker input {
+    width: 100%; min-width: 0; padding: 7px 10px; border: 1px solid var(--amt-line); border-radius: 8px; background: var(--amt-bg); color: var(--amt-fg); font: inherit; font-size: 14px; outline: none;
+}
+.amt-add input:focus, .amt-add textarea:focus, .amt-edit input:focus, .amt-edit textarea:focus, .amt-picker input:focus { border-color: var(--amt-accent); }
+.amt-add textarea, .amt-edit textarea { resize: vertical; }
+.amt-add-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.amt-chip { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border: 1px solid var(--amt-line); border-radius: 13px; background: none; color: var(--amt-muted); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.amt-chip.amt-on { border-color: var(--amt-accent); color: var(--amt-fg); }
+.amt-from { display: inline-flex; align-items: center; gap: 6px; width: fit-content; padding: 2px 4px 2px 9px; border-radius: 12px; background: var(--amt-raise); color: var(--amt-muted); font-size: 12px; }
+.amt-edit-actions { display: flex; justify-content: flex-end; gap: 6px; }
+.amt-picker { position: relative; z-index: 15; display: grid; gap: 6px; margin-top: 6px; padding: 8px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-pop); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24); }
+.amt-picker-list { display: grid; max-height: 220px; overflow-y: auto; }
+.amt-picker-list button { display: flex; align-items: center; gap: 8px; padding: 6px; border: 0; border-radius: 7px; background: none; color: var(--amt-fg); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.amt-picker-list button:hover { background: var(--amt-raise); }
+.amt-picker-list .amt-muted { padding: 6px; font-size: 12.5px; }
+
+/* The bot's messages about todos sent to the user */
+.amt-post { margin-top: 4px; color: var(--amt-fg); }
+.amt-post-title { margin-bottom: 6px; }
+.amt-post-title p { margin: 0; }
+.amt-post-todo { max-width: 520px; padding: 10px 14px; border: 1px solid var(--amt-line); border-left: 4px solid var(--amt-ok); border-radius: 10px; background: var(--amt-side); }
+.amt-post-todo p { margin: 0; }
+.amt-post-link { display: inline-block; margin-top: 4px; color: var(--amt-accent); font-size: 12.5px; }
+
+/* Classic UI: Fusion's app panel classes */
+.amt-app-panel { display: grid; gap: 10px; align-content: start; padding: 10px 12px 16px; }
+.amt-app-h { display: flex; align-items: center; gap: 8px; margin: 6px 2px 0; color: var(--amt-muted); font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+.amt-grow { flex: 1; text-align: left; }
+.amt-seg.amt-seg { padding: 3px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-side); gap: 2px; }
+.amt-seg button { height: 30px; border: 0; border-radius: 7px; background: none; color: var(--amt-muted); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+.amt-seg button.amt-on { background: var(--amt-raise); color: var(--amt-fg); }

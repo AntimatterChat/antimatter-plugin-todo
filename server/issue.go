@@ -21,6 +21,7 @@ type Issue struct {
 type ExtendedIssue struct {
 	Issue
 	ForeignUser     string `json:"user"`
+	ForeignUserID   string `json:"user_id,omitempty"`
 	ForeignList     string `json:"list"`
 	ForeignPosition int    `json:"position"`
 }

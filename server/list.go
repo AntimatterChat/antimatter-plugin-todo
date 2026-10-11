@@ -444,6 +444,7 @@ func (l *listManager) extendIssueInfo(issue *Issue, ir *IssueRef) *ExtendedIssue
 	userName := l.GetUserName(ir.ForeignUserID)
 
 	feIssue.ForeignUser = userName
+	feIssue.ForeignUserID = ir.ForeignUserID
 	feIssue.ForeignList = listName
 	feIssue.ForeignPosition = n
 

@@ -18,12 +18,17 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-	"experimentalDecorators": true,
+    "experimentalDecorators": true,
     "jsx": "react",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "types": [
+      "jest",
+      "node"
+    ]
   },
   "include": [
-    "./**/*"
+    "./src/**/*",
+    "./tests/**/*"
   ],
   "exclude": [
     "dist",

@@ -63,8 +63,9 @@ type assignedRef struct {
 // AssignedTodo is a channel todo assigned to the person asking, with where it is.
 type AssignedTodo struct {
 	ChannelTodo
-	ChannelName string `json:"channel_name"`
-	TeamName    string `json:"team_name,omitempty"`
+	ChannelName    string `json:"channel_name"`
+	ChannelURLName string `json:"channel_url_name"`
+	TeamName       string `json:"team_name,omitempty"`
 }
 
 // ChannelPermissions say what the person asking may do with a channel's list.
@@ -502,7 +503,7 @@ func (p *Plugin) AssignedTodos(userID string) ([]*AssignedTodo, error) {
 			stale = true
 			continue
 		}
-		item := &AssignedTodo{ChannelTodo: *found, ChannelName: channel.DisplayName}
+		item := &AssignedTodo{ChannelTodo: *found, ChannelName: channel.DisplayName, ChannelURLName: channel.Name}
 		if channel.TeamId != "" {
 			if team, appErr := p.API.GetTeam(channel.TeamId); appErr == nil {
 				item.TeamName = team.Name
