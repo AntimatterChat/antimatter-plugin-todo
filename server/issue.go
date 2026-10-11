@@ -57,3 +57,15 @@ func issuesListToString(issues []*ExtendedIssue) string {
 
 	return str
 }
+
+// assignedListToString lists the channel todos assigned to someone, for the daily reminder.
+func assignedListToString(todos []*AssignedTodo) string {
+	if len(todos) == 0 {
+		return ""
+	}
+	str := "\n\nAssigned to you in channels:\n\n"
+	for _, todo := range todos {
+		str += fmt.Sprintf("* %s\n  * (%s)\n", todo.Message, todo.ChannelName)
+	}
+	return str
+}

@@ -114,6 +114,8 @@ func (p *Plugin) initializeAPI() {
 	p.router.HandleFunc("/edit", p.checkAuth(p.handleEdit)).Methods(http.MethodPut)
 	p.router.HandleFunc("/change_assignment", p.checkAuth(p.handleChangeAssignment)).Methods(http.MethodPost)
 
+	p.initChannelAPI(p.router)
+
 	// 404 handler
 	p.router.Handle("{anything:.*}", http.NotFoundHandler())
 }
@@ -258,7 +260,13 @@ func (p *Plugin) handleLists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if allListIssue != nil && len(allListIssue.My) > 0 && r.URL.Query().Get("reminder") == "true" && p.getReminderPreference(userID) {
+	var assigned []*AssignedTodo
+	if r.URL.Query().Get("reminder") == "true" {
+		if assigned, err = p.AssignedTodos(userID); err != nil {
+			p.API.LogWarn("Unable to get the assigned todos for the reminder", "err", err.Error())
+		}
+	}
+	if allListIssue != nil && (len(allListIssue.My) > 0 || len(assigned) > 0) && r.URL.Query().Get("reminder") == "true" && p.getReminderPreference(userID) {
 		var lastReminderAt int64
 		lastReminderAt, err = p.getLastReminderTimeForUser(userID)
 		if err != nil {
@@ -277,7 +285,7 @@ func (p *Plugin) handleLists(w http.ResponseWriter, r *http.Request) {
 		nt := time.Unix(now/1000, 0).In(timezone)
 		lt := time.Unix(lastReminderAt/1000, 0).In(timezone)
 		if nt.Sub(lt).Hours() >= 1 && (nt.Day() != lt.Day() || nt.Month() != lt.Month() || nt.Year() != lt.Year()) {
-			p.PostBotDM(userID, "Daily Reminder:\n\n"+issuesListToString(allListIssue.My))
+			p.PostBotDM(userID, "Daily Reminder:\n\n"+issuesListToString(allListIssue.My)+assignedListToString(assigned))
 			err = p.saveLastReminderTimeForUser(userID)
 			if err != nil {
 				p.API.LogError("Unable to save last reminder for user err=" + err.Error())
