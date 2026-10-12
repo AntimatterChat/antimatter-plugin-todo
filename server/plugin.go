@@ -311,14 +311,14 @@ func (p *Plugin) handleLists(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	reminder := r.URL.Query().Get("reminder") == "true"
+	reminder := r.URL.Query().Get("reminder") == "true" && p.getReminderPreference(userID)
 	var assigned []*AssignedTodo
 	if reminder {
 		if assigned, err = p.AssignedTodos(userID); err != nil {
 			p.API.LogWarn("Unable to get the assigned todos for the reminder", "err", err.Error())
 		}
 	}
-	if (len(allListIssue.My) > 0 || len(assigned) > 0) && reminder && p.getReminderPreference(userID) {
+	if allListIssue != nil && (len(allListIssue.My) > 0 || len(assigned) > 0) && reminder {
 		var lastReminderAt int64
 		lastReminderAt, err = p.getLastReminderTimeForUser(userID)
 		if err != nil {
