@@ -335,8 +335,8 @@ func (p *Plugin) UpdateChannelTodo(userID, channelID, todoID string, req channel
 			if req.Description != nil {
 				description = strings.TrimSpace(*req.Description)
 			}
-			if err := validateText(message, description); err != nil {
-				return err
+			if invalid := validateText(message, description); invalid != nil {
+				return invalid
 			}
 			todo.Message, todo.Description = message, description
 		}
@@ -454,7 +454,7 @@ func (p *Plugin) unindexAssigned(userID, channelID, todoID string) {
 	if _, err := updateKV(p, assignedKey(userID), func(refs *[]assignedRef) error {
 		kept := (*refs)[:0]
 		for _, r := range *refs {
-			if !(r.ChannelID == channelID && r.TodoID == todoID) {
+			if r.ChannelID != channelID || r.TodoID != todoID {
 				kept = append(kept, r)
 			}
 		}

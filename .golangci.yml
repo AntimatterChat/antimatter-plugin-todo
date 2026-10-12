@@ -1,58 +1,71 @@
+version: "2"
 run:
-  timeout: 5m
   modules-download-mode: readonly
-
-linters-settings:
-  goconst:
-    min-len: 2
-    min-occurrences: 2
-  gofmt:
-    simplify: true
-  goimports:
-    local-prefixes: github.com/antimatterchat/antimatter-plugin-todo
-  govet:
-    check-shadowing: true
-    enable-all: true
-    disable:
-      - fieldalignment
-  misspell:
-    locale: US
-
 linters:
-  disable-all: true
+  default: none
   enable:
     - bodyclose
     - errcheck
     - goconst
     - gocritic
-    - gofmt
-    - goimports
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - misspell
     - nakedret
     - revive
     - staticcheck
-    - stylecheck
-    - typecheck
     - unconvert
     - unused
     - whitespace
-
-issues:
-  exclude-rules:
-    - path: server/manifest.go
-      linters:
-        - deadcode
-        - unused
-        - varcheck
-    - path: server/configuration.go
-      linters:
-        - unused
-    - path: _test\.go
-      linters:
-        - bodyclose
-        - goconst
-        - scopelint # https://github.com/kyoh86/scopelint/issues/4
+  settings:
+    goconst:
+      min-len: 2
+      min-occurrences: 2
+    govet:
+      disable:
+        - fieldalignment
+      enable-all: true
+    misspell:
+      locale: US
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - deadcode
+          - unused
+          - varcheck
+        path: server/manifest.go
+      - linters:
+          - unused
+        path: server/configuration.go
+      - linters:
+          - bodyclose
+          - goconst
+          - scopelint
+        path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true
+    goimports:
+      local-prefixes:
+        - github.com/antimatterchat/antimatter-plugin-todo
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

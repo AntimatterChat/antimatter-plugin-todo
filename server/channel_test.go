@@ -36,6 +36,7 @@ type channelFixture struct {
 }
 
 func newChannelFixture(t *testing.T) *channelFixture {
+	t.Helper()
 	f := &channelFixture{api: &plugintest.API{}, kv: map[string][]byte{}, dms: map[string][]string{}}
 	api := f.api
 	api.On("KVGet", mock.Anything).Return(func(key string) []byte {
