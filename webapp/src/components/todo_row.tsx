@@ -11,6 +11,20 @@ import {DueMark} from './due';
 import Menu, {type Action} from './menu';
 
 // Text renders a todo's text as a message's Markdown, when the host offers its formatter.
+// webLink returns a todo's permalink if it's a web link: older todos kept the one their client sent,
+// which could be anything (a javascript: URL).
+export function webLink(link?: string): string {
+    if (!link) {
+        return '';
+    }
+    try {
+        const url = new URL(link, window.location.origin);
+        return url.protocol === 'http:' || url.protocol === 'https:' ? link : '';
+    } catch {
+        return '';
+    }
+}
+
 export function Text({text}: {text: string}) {
     const utils = window.PostUtils;
     if (utils?.formatText && utils.messageHtmlToComponent) {
@@ -114,7 +128,9 @@ function EditForm({message, description, onSave, onCancel}: {message: string; de
 
 // TodoRow is a todo in a list: its checkbox, text, details, when it's due and the people and place
 // it's about, with its actions in a menu.
-export default function TodoRow({message, description, done, due, onToggle, meta, shared, permalink, buttons, actions, onSave, editing, onEditingChange, picker}: Props) {
+export default function TodoRow(props: Props) {
+    const {message, description, done, due, onToggle, meta, shared, buttons, actions, onSave, editing, onEditingChange, picker} = props;
+    const permalink = webLink(props.permalink);
     const intl = useIntl();
 
     if (editing && onSave) {

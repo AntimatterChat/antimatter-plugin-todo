@@ -10,7 +10,7 @@ import * as client from '../client';
 import {messages} from '../messages';
 import {refreshIndex, refreshRequests, useRequests} from '../state';
 
-import {Text} from './todo_row';
+import {Text, webLink} from './todo_row';
 
 type TodoProps = {
     message?: string;
@@ -23,7 +23,8 @@ type TodoProps = {
 // default list), mark it done or decline it from here while it's waiting for their answer.
 export default function TodoPost({post}: {post: Post}) {
     const intl = useIntl();
-    const {message, todo, postPermalink, issueId} = (post.props || {}) as TodoProps;
+    const {message, todo, issueId} = (post.props || {}) as TodoProps;
+    const postPermalink = webLink((post.props as TodoProps | undefined)?.postPermalink);
     const requests = useRequests();
     const [error, setError] = useState('');
     const waiting = Boolean(issueId && requests.lists?.in.some((i) => i.id === issueId));
