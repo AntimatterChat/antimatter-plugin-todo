@@ -15,6 +15,7 @@ import {messages} from './messages';
 import {openDraft, refreshLoadedChannel, refreshPersonal, setShowPanel} from './state';
 import type {PluginClass, PluginRegistry, PluginStore, RightHandSidebarRegistration} from './types/host';
 import Icon from './ui/icon';
+import {registerTranslations} from './translations';
 
 import './styles.css';
 
@@ -33,6 +34,8 @@ export default class Plugin implements PluginClass {
     private onActivity?: () => void;
 
     public initialize(registry: PluginRegistry, store: PluginStore) {
+        registerTranslations(registry);
+
         if (window.basename) {
             Client4.setUrl(window.basename);
         }
