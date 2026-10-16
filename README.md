@@ -41,6 +41,11 @@ make check-style   # golangci-lint, eslint and the type checker
 
 Set `MM_SERVICESETTINGS_ENABLEDEVELOPER=1` to build the server for your platform only.
 
+## Documentation
+
+See the [user guide](https://antimatter.chat/docs/users/apps.html#todo) on
+[antimatter.chat/docs](https://antimatter.chat/docs/).
+
 ## Feedback and support
 
 Found a bug in the Todo plugin, or missing a feature? Please [open an
