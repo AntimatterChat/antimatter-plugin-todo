@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/mattermost/mattermost/server/public/model"
@@ -15,6 +16,8 @@ type Issue struct {
 	Description   string `json:"description,omitempty"`
 	CreateAt      int64  `json:"create_at"`
 	PostID        string `json:"post_id"`
+	// ListID is, for the receiver's copy of a todo they accepted, the list it's in now.
+	ListID string `json:"list_id,omitempty"`
 }
 
 // ExtendedIssue extends the information on Issue to be used on the front-end
@@ -59,14 +62,81 @@ func issuesListToString(issues []*ExtendedIssue) string {
 	return str
 }
 
-// assignedListToString lists the channel todos assigned to someone, for the daily reminder.
+// dueToString tells when a todo is due, from today (YYYY-MM-DD, in the reader's time zone).
+func dueToString(due, today string) string {
+	switch {
+	case due == "":
+		return ""
+	case due < today:
+		return ", overdue since " + due
+	case due == today:
+		return ", due today"
+	default:
+		return ", due " + due
+	}
+}
+
+// itemsToString lists todos, for the bot's messages.
+func itemsToString(items []*Item, today string) string {
+	if len(items) == 0 {
+		return "Nothing to do!"
+	}
+	str := ""
+	for _, item := range items {
+		check := "[ ]"
+		if item.Done() {
+			check = "[x]"
+		}
+		if due := strings.TrimPrefix(dueToString(item.Due, today), ", "); due != "" && !item.Done() {
+			str += fmt.Sprintf("- %s %s (%s)\n", check, item.Message, due)
+		} else {
+			str += fmt.Sprintf("- %s %s\n", check, item.Message)
+		}
+	}
+	return str
+}
+
+// personalListsToString lists the open todos of someone's personal lists, by list, for the daily
+// reminder.
+func personalListsToString(lists []*TodoList, open map[string][]*Item, today string) string {
+	str := ""
+	for _, list := range lists {
+		items := open[list.ID]
+		if len(items) == 0 {
+			continue
+		}
+		str += fmt.Sprintf("**%s**\n", listTitle(list))
+		for _, item := range items {
+			str += fmt.Sprintf("* %s%s\n", item.Message, dueToString(item.Due, today))
+		}
+		str += "\n"
+	}
+	if str == "" {
+		return "Nothing to do in your lists!\n"
+	}
+	return str
+}
+
+// listTitle is a list's icon and name.
+func listTitle(list *TodoList) string {
+	if list.Icon != "" {
+		return list.Icon + " " + list.Name
+	}
+	return list.Name
+}
+
+// assignedListToString lists the todos assigned to someone, for the daily reminder.
 func assignedListToString(todos []*AssignedTodo) string {
 	if len(todos) == 0 {
 		return ""
 	}
 	str := "\n\nAssigned to you in channels:\n\n"
 	for _, todo := range todos {
-		str += fmt.Sprintf("* %s\n  * (%s)\n", todo.Message, todo.ChannelName)
+		where := todo.ListName
+		if todo.ChannelName != "" {
+			where += ", ~" + todo.ChannelURLName
+		}
+		str += fmt.Sprintf("* %s\n  * (%s)\n", todo.Message, where)
 	}
 	return str
 }

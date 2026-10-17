@@ -3,40 +3,59 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"regexp"
+	"slices"
 	"strings"
+	"time"
 
 	"github.com/mattermost/mattermost/server/public/model"
 	"github.com/mattermost/mattermost/server/public/plugin"
 )
 
 const (
-	listHeaderMessage = " Todo List:\n\n"
-	MyFlag            = "my"
-	InFlag            = "in"
-	OutFlag           = "out"
+	MyFlag  = "my"
+	InFlag  = "in"
+	OutFlag = "out"
 )
 
 func getHelp() string {
 	return `Available Commands:
 
+lists
+	Lists the todo lists of this channel, and your own.
+
+new [name]
+	Makes a todo list in this channel, shared with its members.
+
+	example: /todo new Launch checklist
+
+new --personal [name]
+	Makes a todo list only you see.
+
 add [message]
-	Adds a Todo.
+	Adds a todo to the list you last added to from this channel, else to the channel's first list,
+	else to your list "My todos".
 
 	example: /todo add Don't forget to be awesome
 
+add [list]: [message]
+	Adds a todo to a list of this channel or of yours, by its name.
+
+	example: /todo add Launch checklist: Book the room
+
 list
-	Lists your Todo issues.
+	Lists the todos of your list "My todos".
 
 list [listName]
-	List your issues in certain list
+	Lists the todos sent to you (in) or by you (out).
 
 	example: /todo list in
 	example: /todo list out
 	example (same as /todo list): /todo list my
 
 pop
-	Removes the Todo issue at the top of the list.
+	Removes the first todo of your list "My todos".
 
 send [user] [message]
 	Sends some user a Todo
@@ -86,7 +105,7 @@ func getCommand() *model.Command {
 		DisplayName:      "Todo Bot",
 		Description:      "Interact with your Todo list.",
 		AutoComplete:     true,
-		AutoCompleteDesc: "Available commands: add, list, pop, send, help",
+		AutoCompleteDesc: "Available commands: lists, new, add, list, pop, send, settings, help",
 		AutoCompleteHint: "[command]",
 		AutocompleteData: getAutocompleteData(),
 	}
@@ -118,6 +137,10 @@ func (p *Plugin) ExecuteCommand(_ *plugin.Context, args *model.CommandArgs) (*mo
 			restOfArgs = stringArgs[2:]
 		}
 		switch command {
+		case "lists":
+			handler = p.runListsCommand
+		case "new":
+			handler = p.runNewCommand
 		case "add":
 			handler = p.runAddCommand
 		case "list":
@@ -198,6 +221,99 @@ func (p *Plugin) runSendCommand(args []string, extra *model.CommandArgs) (bool, 
 	return false, nil
 }
 
+// where tells whom a list is shared with, for the bot's answers.
+func (p *Plugin) where(list *TodoList) string {
+	if list.ChannelID == "" {
+		return "only you can see it"
+	}
+	channel, appErr := p.API.GetChannel(list.ChannelID)
+	if appErr != nil || isConversation(channel) {
+		return "shared with this conversation"
+	}
+	return "shared with ~" + channel.Name
+}
+
+func today() string { return time.Now().Format(time.DateOnly) }
+
+// runListsCommand lists the lists of the channel and the person's own.
+func (p *Plugin) runListsCommand(_ []string, extra *model.CommandArgs) (bool, error) {
+	var b strings.Builder
+	if channel, err := p.channelRights(extra.UserId, extra.ChannelId); err == nil && channel.Member {
+		lists, err := p.ChannelLists(extra.UserId, extra.ChannelId)
+		if err != nil {
+			return false, err
+		}
+		if isConversation(channel.Channel) {
+			b.WriteString("#### Todo lists of this conversation\n")
+		} else {
+			fmt.Fprintf(&b, "#### Todo lists of ~%s\n", channel.Channel.Name)
+		}
+		writeLists(&b, lists, "No lists here yet: `/todo new <name>` makes one.")
+	}
+	lists, err := p.PersonalLists(extra.UserId)
+	if err != nil {
+		return false, err
+	}
+	b.WriteString("\n#### Your lists\n")
+	writeLists(&b, lists, "")
+	p.postCommandResponse(extra, b.String())
+	return false, nil
+}
+
+func writeLists(b *strings.Builder, lists []ListInfo, empty string) {
+	shown := 0
+	for _, list := range lists {
+		if list.ArchivedAt != 0 {
+			continue
+		}
+		shown++
+		fmt.Fprintf(b, "* **%s** (%d open%s)\n", listTitle(&list.TodoList), list.OpenCount, dueToString(list.EarliestDue, today()))
+	}
+	if shown == 0 && empty != "" {
+		b.WriteString(empty + "\n")
+	}
+}
+
+// runNewCommand makes a list of the channel, or with --personal, one of the person's own.
+func (p *Plugin) runNewCommand(args []string, extra *model.CommandArgs) (bool, error) {
+	req := listRequest{ChannelID: extra.ChannelId}
+	if len(args) > 0 && (args[0] == "--personal" || args[0] == "--mine") {
+		req.ChannelID = ""
+		args = args[1:]
+	}
+	name := strings.Join(args, " ")
+	if strings.TrimSpace(name) == "" {
+		return true, errors.New("give the list a name: `/todo new <name>`")
+	}
+	req.Name = &name
+	list, err := p.CreateList(extra.UserId, req)
+	if err != nil {
+		if status := errorStatus(err); status == http.StatusBadRequest || status == http.StatusForbidden {
+			return true, err
+		}
+		return false, err
+	}
+	p.postCommandResponse(extra, fmt.Sprintf("Made the list **%s**, %s.", listTitle(&list.TodoList), p.where(&list.TodoList)))
+	return false, nil
+}
+
+// findList finds a list someone can add to by its name: one of the channel's first, then theirs.
+func (p *Plugin) findList(userID, channelID, name string) *TodoList {
+	targets, err := p.Targets(userID, channelID)
+	if err != nil {
+		return nil
+	}
+	name = strings.ToLower(strings.Join(strings.Fields(name), " "))
+	for _, info := range targets.Lists {
+		if strings.ToLower(info.Name) == name || strings.ToLower(listTitle(&info.TodoList)) == name {
+			list := info.TodoList
+			return &list
+		}
+	}
+	return nil
+}
+
+// runAddCommand adds a todo: to the list named before a colon, or else to the default list.
 func (p *Plugin) runAddCommand(args []string, extra *model.CommandArgs) (bool, error) {
 	message := strings.Join(args, " ")
 
@@ -206,42 +322,37 @@ func (p *Plugin) runAddCommand(args []string, extra *model.CommandArgs) (bool, e
 		return false, nil
 	}
 
-	newIssue, err := p.listManager.AddIssue(extra.UserId, message, "", "", "")
-	if err != nil {
+	var list *TodoList
+	if name, rest, found := strings.Cut(message, ":"); found && strings.TrimSpace(rest) != "" {
+		if list = p.findList(extra.UserId, extra.ChannelId, name); list != nil {
+			message = strings.TrimSpace(rest)
+		}
+	}
+	if list == nil {
+		var err error
+		if list, err = p.defaultTarget(extra.UserId, extra.ChannelId); err != nil {
+			return false, err
+		}
+	}
+
+	if _, err := p.AddItem(extra.UserId, list.ID, itemRequest{Message: &message, ChannelID: extra.ChannelId}); err != nil {
+		if errorStatus(err) == http.StatusBadRequest {
+			return true, err
+		}
 		return false, err
 	}
 
-	p.sendRefreshEvent(extra.UserId, []string{MyListKey})
-
-	responseMessage := "Added Todo."
-
-	issues, err := p.listManager.GetIssueList(extra.UserId, MyListKey)
-	if err != nil {
-		p.API.LogError(err.Error())
-		p.postCommandResponse(extra, responseMessage)
-		return false, nil
-	}
-
-	// It's possible that database replication delay has resulted in the issue
-	// list not containing the newly-added issue, so we check for that and
-	// append the issue manually if necessary.
-	var issueIncluded bool
-	for _, issue := range issues {
-		if newIssue.ID == issue.ID {
-			issueIncluded = true
-			break
+	responseMessage := fmt.Sprintf("Added to **%s** (%s).", listTitle(list), p.where(list))
+	if items, err := p.getItems(list.ID); err == nil {
+		open := []*Item{}
+		for _, item := range items {
+			if !item.Done() {
+				open = append(open, item)
+			}
 		}
+		responseMessage += "\n\n" + itemsToString(open, today())
 	}
-	if !issueIncluded {
-		issues = append(issues, &ExtendedIssue{
-			Issue: *newIssue,
-		})
-	}
-
-	responseMessage += listHeaderMessage
-	responseMessage += issuesListToString(issues)
 	p.postCommandResponse(extra, responseMessage)
-
 	return false, nil
 }
 
@@ -264,6 +375,25 @@ func (p *Plugin) runListCommand(args []string, extra *model.CommandArgs) (bool, 
 		}
 	}
 
+	if listID == MyListKey {
+		list, err := p.ensurePersonal(extra.UserId)
+		if err != nil {
+			return false, err
+		}
+		items, err := p.getItems(list.ID)
+		if err != nil {
+			return false, err
+		}
+		open := []*Item{}
+		for _, item := range items {
+			if !item.Done() {
+				open = append(open, item)
+			}
+		}
+		p.postCommandResponse(extra, fmt.Sprintf("**%s**:\n\n%s\nYour other lists: `/todo lists`.", listTitle(list), itemsToString(open, today())))
+		return false, nil
+	}
+
 	issues, err := p.listManager.GetIssueList(extra.UserId, listID)
 	if err != nil {
 		return false, err
@@ -277,43 +407,46 @@ func (p *Plugin) runListCommand(args []string, extra *model.CommandArgs) (bool, 
 	return false, nil
 }
 
+// runPopCommand removes the first open todo of the person's default list.
 func (p *Plugin) runPopCommand(_ []string, extra *model.CommandArgs) (bool, error) {
-	issue, foreignID, err := p.listManager.PopIssue(extra.UserId)
+	list, err := p.ensurePersonal(extra.UserId)
 	if err != nil {
-		if err.Error() == "cannot find issue" {
-			p.postCommandResponse(extra, "There are no Todos to pop.")
-			return false, nil
-		}
 		return false, err
 	}
-
-	userName := p.listManager.GetUserName(extra.UserId)
-
-	if foreignID != "" {
-		p.sendRefreshEvent(foreignID, []string{OutListKey})
-
-		message := fmt.Sprintf("@%s popped a Todo you sent: %s", userName, issue.Message)
-		p.PostBotDM(foreignID, message)
-	}
-
-	p.sendRefreshEvent(extra.UserId, []string{MyListKey})
-
-	responseMessage := "Removed top Todo."
-
-	replyMessage := fmt.Sprintf("@%s popped a todo attached to this thread", userName)
-	p.postReplyIfNeeded(issue.PostID, replyMessage, issue.Message, issue.PostPermalink)
-
-	issues, err := p.listManager.GetIssueList(extra.UserId, MyListKey)
+	items, err := p.getItems(list.ID)
 	if err != nil {
-		p.API.LogError(err.Error())
-		p.postCommandResponse(extra, responseMessage)
+		return false, err
+	}
+	i := slices.IndexFunc(items, func(t *Item) bool { return !t.Done() })
+	if i < 0 {
+		p.postCommandResponse(extra, "There are no Todos to pop.")
 		return false, nil
 	}
+	popped, err := p.takeItem(list.ID, items[i].ID)
+	if err != nil {
+		return false, err
+	}
+	p.sendListChanged(list)
 
-	responseMessage += listHeaderMessage
-	responseMessage += issuesListToString(issues)
-	p.postCommandResponse(extra, responseMessage)
+	userName := p.listManager.GetUserName(extra.UserId)
+	if popped.FromIssueID != "" {
+		if err = p.listManager.ReleaseRequest(popped.ID, popped.FromUserID, popped.FromIssueID); err != nil {
+			p.API.LogWarn("Could not remove the sender's copy of a todo", "error", err.Error())
+		}
+		p.sendRefreshEvent(popped.FromUserID, []string{OutListKey})
+		p.PostBotDM(popped.FromUserID, fmt.Sprintf("@%s popped a Todo you sent: %s", userName, popped.Message))
+	}
+	if popped.PostID != "" {
+		p.postReplyIfNeeded(popped.PostID, fmt.Sprintf("@%s popped a todo attached to this thread", userName), popped.Message, popped.PostPermalink)
+	}
 
+	open := []*Item{}
+	for _, item := range items {
+		if !item.Done() && item.ID != popped.ID {
+			open = append(open, item)
+		}
+	}
+	p.postCommandResponse(extra, fmt.Sprintf("Removed the first todo of **%s**.\n\n%s", listTitle(list), itemsToString(open, today())))
 	return false, nil
 }
 
@@ -408,10 +541,17 @@ func (p *Plugin) runSettingsCommand(args []string, extra *model.CommandArgs) (bo
 }
 
 func getAutocompleteData() *model.AutocompleteData {
-	todo := model.NewAutocompleteData("todo", "[command]", "Available commands: list, add, pop, send, settings, help")
+	todo := model.NewAutocompleteData("todo", "[command]", "Available commands: lists, new, add, list, pop, send, settings, help")
 
-	add := model.NewAutocompleteData("add", "[message]", "Adds a Todo")
-	add.AddTextArgument("E.g. be awesome", "[message]", "")
+	lists := model.NewAutocompleteData("lists", "", "Lists the todo lists of this channel, and yours")
+	todo.AddCommand(lists)
+
+	newList := model.NewAutocompleteData("new", "[--personal] [name]", "Makes a todo list in this channel (--personal: only you see it)")
+	newList.AddTextArgument("The list's name", "[--personal] [name]", "")
+	todo.AddCommand(newList)
+
+	add := model.NewAutocompleteData("add", "[list:] [message]", "Adds a Todo, to the list named before a colon")
+	add.AddTextArgument("E.g. Launch: be awesome", "[list:] [message]", "")
 	todo.AddCommand(add)
 
 	list := model.NewAutocompleteData("list", "[name]", "Lists your Todo issues")
@@ -427,7 +567,7 @@ func getAutocompleteData() *model.AutocompleteData {
 	list.AddStaticListArgument("Lists your Todo issues", false, items)
 	todo.AddCommand(list)
 
-	pop := model.NewAutocompleteData("pop", "", "Removes the Todo issue at the top of the list")
+	pop := model.NewAutocompleteData("pop", "", "Removes the first todo of your list \"My todos\"")
 	todo.AddCommand(pop)
 
 	send := model.NewAutocompleteData("send", "[user] [todo]", "Sends a Todo to a specified user")

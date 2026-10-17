@@ -95,6 +95,8 @@ func (c *ChangeAssignmentAPIRequest) IsValid() error {
 
 type AcceptAPIRequest struct {
 	ID string `json:"id"`
+	// ListID is the personal list to accept the todo into: the default one when empty.
+	ListID string `json:"list_id"`
 }
 
 func GetAcceptRequestPayloadFromJSON(data io.Reader) (*AcceptAPIRequest, error) {

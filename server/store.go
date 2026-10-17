@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strconv"
 
 	"github.com/mattermost/mattermost/server/public/model"
@@ -272,21 +273,14 @@ func (l *listStore) BumpReference(userID, issueID, listID string) error {
 			return err
 		}
 
-		var i int
-		var ir *IssueRef
-
-		for i, ir = range list {
-			if issueID == ir.IssueID {
-				break
-			}
-		}
-
-		if i == len(list) {
+		// Not found (e.g. accepted already): nothing to move, rather than the last one
+		index := slices.IndexFunc(list, func(ir *IssueRef) bool { return ir.IssueID == issueID })
+		if index < 0 {
 			return errors.New("cannot find issue")
 		}
 
-		newList := append([]*IssueRef{ir}, list[:i]...)
-		newList = append(newList, list[i+1:]...)
+		newList := append([]*IssueRef{list[index]}, list[:index]...)
+		newList = append(newList, list[index+1:]...)
 
 		ok, err := l.saveList(userID, listID, newList, originalJSONList)
 		if err != nil {
