@@ -2,7 +2,7 @@
 // See LICENSE for license information.
 
 import React, {useState} from 'react';
-import {useIntl} from 'react-intl';
+import {FormattedMessage, useIntl} from 'react-intl';
 import {useSelector} from 'react-redux';
 
 import type {GlobalState} from '@mattermost/types/store';
@@ -28,14 +28,21 @@ type Props = {
 };
 
 function Person({userId, message}: {userId: string; message: typeof messages.from}) {
-    const intl = useIntl();
     return (
         <span className='amt-who'>
             <Avatar
                 userId={userId}
                 size={16}
             />
-            {intl.formatMessage(message, {name: <Name userId={userId}/>})}
+            <FormattedMessage
+                {...message}
+                values={{name: (
+                    <Name
+                        key='name'
+                        userId={userId}
+                    />
+                )}}
+            />
         </span>
     );
 }
@@ -92,7 +99,19 @@ export default function ItemRow({item, list, me, first, onError}: Props) {
 
     let meta: React.ReactNode = null;
     if (done && item.done_by) {
-        meta = <span>{intl.formatMessage(messages.doneBy, {name: <Name userId={item.done_by}/>})}</span>;
+        meta = (
+            <span>
+                <FormattedMessage
+                    {...messages.doneBy}
+                    values={{name: (
+                        <Name
+                            key='name'
+                            userId={item.done_by}
+                        />
+                    )}}
+                />
+            </span>
+        );
     } else if (item.assignee_id) {
         meta = (
             <Person
@@ -114,7 +133,7 @@ export default function ItemRow({item, list, me, first, onError}: Props) {
         picker = (
             <UserPicker
                 teamId={channel?.team_id || currentTeamId}
-                channelId={picking === 'assign' ? list.channel_id : undefined}
+                channelId={picking === 'assign' ? list.channel_id : ''}
                 onPick={(u) => {
                     setPicking(null);
                     if (picking === 'assign') {

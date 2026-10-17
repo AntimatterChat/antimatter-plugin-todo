@@ -117,7 +117,7 @@ function NewListForm({channelId, onDone}: {channelId?: string; onDone: () => voi
     );
 }
 
-function Lists({index, showScope, empty}: {index?: {lists?: ListInfo[]; error?: string}; showScope: boolean; empty: string}) {
+function Lists({index, showScope, empty}: {index?: {lists?: ListInfo[]; error?: string} | null; showScope: boolean; empty: string}) {
     const intl = useIntl();
     const [showArchived, setShowArchived] = useState(false);
     if (index?.error && !index.lists) {
@@ -250,7 +250,7 @@ export default function ListIndex({channel}: {channel?: Channel}) {
             </div>
             {creating && createLabel && (
                 <NewListForm
-                    channelId={shown === 'channel' ? channel?.id : undefined}
+                    channelId={shown === 'channel' ? channel?.id : ''}
                     onDone={() => setCreating(false)}
                 />
             )}

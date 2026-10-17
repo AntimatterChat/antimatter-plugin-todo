@@ -40,7 +40,9 @@ type Props = {
 // list's, with a person) has no due date: it becomes their request.
 export default function AddForm({placeholder, personLabel, teamId, pickerChannelId, draft, onAdd, onDraftUsed}: Props) {
     const intl = useIntl();
-    const [message, setMessage] = useState('');
+
+    // A todo from a message starts with its text, from the first render
+    const [message, setMessage] = useState(draft?.message || '');
     const [description, setDescription] = useState('');
     const [details, setDetails] = useState(false);
     const [person, setPerson] = useState<UserProfile | null>(null);

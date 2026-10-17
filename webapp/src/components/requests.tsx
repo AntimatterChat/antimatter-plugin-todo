@@ -2,7 +2,7 @@
 // See LICENSE for license information.
 
 import React, {useState} from 'react';
-import {useIntl} from 'react-intl';
+import {FormattedMessage, useIntl} from 'react-intl';
 
 import * as client from '../client';
 import {messages} from '../messages';
@@ -29,7 +29,6 @@ function Section({title, count, children}: {title: string; count?: number; child
 }
 
 function Person({userId, message}: {userId?: string; message: typeof messages.from}) {
-    const intl = useIntl();
     if (!userId) {
         return null;
     }
@@ -39,7 +38,15 @@ function Person({userId, message}: {userId?: string; message: typeof messages.fr
                 userId={userId}
                 size={16}
             />
-            {intl.formatMessage(message, {name: <Name userId={userId}/>})}
+            <FormattedMessage
+                {...message}
+                values={{name: (
+                    <Name
+                        key='name'
+                        userId={userId}
+                    />
+                )}}
+            />
         </span>
     );
 }

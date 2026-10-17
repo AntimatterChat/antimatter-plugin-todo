@@ -117,7 +117,7 @@ export async function refreshIndex(key: IndexKey) {
 
 // useIndex returns the lists of a tab, loading them when shown.
 export function useIndex(key: IndexKey | null) {
-    const entry = useTodoState((s) => (key ? s.indexes[key] : undefined));
+    const entry = useTodoState((s) => (key ? s.indexes[key] : null));
     useEffect(() => {
         if (key) {
             refreshIndex(key);

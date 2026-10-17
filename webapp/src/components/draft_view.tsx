@@ -92,7 +92,7 @@ export default function DraftView({draft}: {draft: Draft}) {
                             placeholder={intl.formatMessage(messages.addToList, {list: target.name})}
                             personLabel={intl.formatMessage(shared ? messages.assignTo : messages.sendTo)}
                             teamId={teamId}
-                            pickerChannelId={shared ? target.channel_id : undefined}
+                            pickerChannelId={shared ? target.channel_id : ''}
                             draft={draft}
                             onDraftUsed={cancel}
                             onAdd={async ({message, description, person, due}) => {
@@ -102,7 +102,7 @@ export default function DraftView({draft}: {draft: Draft}) {
                                     setDraft(null);
                                     return;
                                 }
-                                await client.addItem(target.id, {message, description, due: due || undefined, assignee_id: person?.id, post_id: draft.postId, channel_id: draft.channelId});
+                                await client.addItem(target.id, {message, description, ...(due ? {due} : {}), ...(person ? {assignee_id: person.id} : {}), post_id: draft.postId, channel_id: draft.channelId});
                                 refreshAfterChange(target.id, target.channel_id);
                                 setDraft(null);
                                 openList(target.id);
