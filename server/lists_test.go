@@ -219,6 +219,48 @@ func TestListLifecycle(t *testing.T) {
 	assert.Nil(t, data, "its todos are gone")
 }
 
+// Who deletes a channel's lists and todos: their creators and the channel's admins (channel,
+// community and system admins), not every member who may rename the channel, which on a new server
+// is every member. The other members still add, change and check off todos.
+func TestOnlyCreatorsAndAdminsDelete(t *testing.T) {
+	p, _ := newTestPlugin(t)
+	launch := newList(t, p, alice, town, "Launch")
+	room := addItem(t, p, alice, launch.ID, "Book the room")
+
+	view, err := p.GetList(bob, launch.ID)
+	require.NoError(t, err)
+	assert.False(t, view.CanDelete, "a member who didn't make the list")
+	assert.False(t, view.CanManage)
+	assert.True(t, view.CanEdit)
+	assert.Equal(t, http.StatusForbidden, status(p.DeleteList(bob, launch.ID)), "a member doesn't delete someone else's list")
+	assert.Equal(t, http.StatusForbidden, status(p.DeleteItem(bob, launch.ID, room.ID)), "nor someone else's todo")
+
+	_, err = p.UpdateItem(bob, launch.ID, room.ID, itemRequest{Message: str("Book the big room"), Done: yes()})
+	require.NoError(t, err, "but changes and checks off todos")
+	cake := addItem(t, p, bob, launch.ID, "Order the cake")
+	require.NoError(t, p.DeleteItem(bob, launch.ID, cake.ID), "and deletes their own")
+
+	view, err = p.GetList(alice, launch.ID)
+	require.NoError(t, err)
+	assert.True(t, view.CanDelete, "the list's creator")
+	assert.False(t, view.CanManage)
+
+	for _, admin := range []struct{ name, userID string }{{"a channel admin", carol}, {"a community admin", dana}, {"a system admin", sam}} {
+		t.Run(admin.name, func(t *testing.T) {
+			list := newList(t, p, bob, town, "Retro")
+			item := addItem(t, p, bob, list.ID, "Collect feedback")
+			view, err := p.GetList(admin.userID, list.ID)
+			require.NoError(t, err)
+			assert.True(t, view.CanDelete)
+			assert.True(t, view.CanManage)
+			require.NoError(t, p.DeleteItem(admin.userID, list.ID, item.ID), "deletes someone else's todo")
+			require.NoError(t, p.DeleteList(admin.userID, list.ID), "and list")
+		})
+	}
+
+	require.NoError(t, p.DeleteList(alice, launch.ID), "the creator deletes their list")
+}
+
 func TestConversationLists(t *testing.T) {
 	p, _ := newTestPlugin(t)
 	plans := newList(t, p, alice, dmAB, "Plans")

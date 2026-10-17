@@ -21,8 +21,8 @@ details and a due date), check them off, edit them, assign them to a member of t
 send them to someone), and move them to the top; done todos are folded under the open ones. Its header has the
 way back to the lists, its name (click to rename it), whom it's shared with, a star and a menu: rename, change its
 icon, archive (read-only, folded under **Archived**) or delete it. Everyone who can post in the channel changes a
-channel's lists and their todos; the list's creator and the channel's admins delete it, and a todo's author and the
-channel's admins delete the todo. People who can only read the channel (a read-only or archived one) see its lists
+channel's lists and their todos; the list's creator and the channel's admins (channel, community and system admins)
+delete it, and a todo's author and those admins delete the todo. People who can only read the channel (a read-only or archived one) see its lists
 without changing them; people outside the channel don't see them at all.
 
 A message's **Add to todo** starts a todo with its text, linked to the message, and asks which list it goes to:

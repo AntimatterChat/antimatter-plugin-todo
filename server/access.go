@@ -18,10 +18,13 @@ import (
 //     its members read it, and those who can post in the channel change its todos, rename, archive
 //     and unarchive it. People who aren't members don't see it, whatever their role (guests
 //     included); in an archived or read-only channel, the members only read it.
-//   - A channel's list is deleted by whoever created it or a channel admin; in a conversation,
-//     which has no admins, by whoever created it (by anyone in it, for the list made from the
-//     conversation's todos by the migration, which has no creator).
-//   - A todo of a channel's list is deleted by its author or a channel admin.
+//   - A channel's list is deleted by whoever created it or its admins: the channel's admins, the
+//     community's admins and the system admins. Renaming a channel isn't enough: by default every
+//     member may. In a conversation, which has no admins, a list is deleted by whoever created it
+//     (by anyone in it, for the list made from the conversation's todos by the migration, which
+//     has no creator).
+//   - A todo of a channel's list is deleted by its author or those admins. The other members still
+//     add, change and check off its todos.
 //   - Only a member of the channel can be assigned a todo of its lists. In a personal list, a todo
 //     is sent to someone instead: it leaves the list, and they get it as a request (see
 //     requests.go), as before lists existed.
@@ -34,7 +37,7 @@ type channelRights struct {
 	Member bool
 	// CanEdit: they can post in it, and it isn't archived.
 	CanEdit bool
-	// CanManage: they can also delete the todos and lists of others.
+	// CanManage: they can also delete the todos and lists of others, as an admin of the channel.
 	CanManage bool
 }
 
@@ -48,7 +51,8 @@ func (p *Plugin) channelRights(userID, channelID string) (*channelRights, error)
 		return nil, newAPIError(http.StatusNotFound, "channel not found")
 	}
 	rights := &channelRights{Channel: channel}
-	if _, appErr = p.API.GetChannelMember(channelID, userID); appErr != nil {
+	member, appErr := p.API.GetChannelMember(channelID, userID)
+	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {
 			return rights, nil
 		}
@@ -56,7 +60,7 @@ func (p *Plugin) channelRights(userID, channelID string) (*channelRights, error)
 	}
 	rights.Member = true
 	rights.CanEdit = channel.DeleteAt == 0 && p.API.HasPermissionToChannel(userID, channelID, model.PermissionCreatePost)
-	rights.CanManage = rights.CanEdit && p.canManageChannel(userID, channel)
+	rights.CanManage = rights.CanEdit && p.isChannelAdmin(userID, channel, member)
 	return rights, nil
 }
 
@@ -72,16 +76,21 @@ func (p *Plugin) memberChannel(userID, channelID string) (*channelRights, error)
 	return rights, nil
 }
 
-func (p *Plugin) canManageChannel(userID string, channel *model.Channel) bool {
-	switch channel.Type {
-	case model.ChannelTypeOpen:
-		return p.API.HasPermissionToChannel(userID, channel.Id, model.PermissionManagePublicChannelProperties)
-	case model.ChannelTypePrivate:
-		return p.API.HasPermissionToChannel(userID, channel.Id, model.PermissionManagePrivateChannelProperties)
-	default:
+// isChannelAdmin tells whether a member of a channel is one of its admins: a channel admin, an
+// admin of its community (who may manage the community) or a system admin. The permissions to
+// rename a channel don't count: every member has them by default.
+func (p *Plugin) isChannelAdmin(userID string, channel *model.Channel, member *model.ChannelMember) bool {
+	if isConversation(channel) {
 		// Nobody manages direct and group messages: their todos are deleted by their creators.
 		return false
 	}
+	if member != nil && member.SchemeAdmin {
+		return true
+	}
+	if channel.TeamId != "" && p.API.HasPermissionToTeam(userID, channel.TeamId, model.PermissionManageTeam) {
+		return true
+	}
+	return p.API.HasPermissionTo(userID, model.PermissionManageSystem)
 }
 
 // listRights are what someone may do with a list.
