@@ -11,7 +11,7 @@ Open **Todo** from the app bar (or the channel header). Like Notes, the panel li
 
 - **This channel** (or **This conversation**): the channel's lists, shared by its members. The **+** in the panel's
   header makes one.
-- **Favorites**: the lists you starred, from any channel, and your own.
+- **Favourites**: the lists you starred, from any channel, and your own.
 - **Mine**: your personal lists (only you see them; **My todos** is always there), then the todos assigned to you
   in channels, the todos people sent you (accept, mark as done or decline them), and the ones you sent (remind the
   person or cancel).
@@ -38,7 +38,7 @@ list unless you name it) or `/todo add <list>: <message>`, `/todo list [my|in|ou
 `/todo settings allow_incoming_task_requests [on|off]`.
 
 Upgrading from a version without lists moves your todos to **My todos**, each channel's to a list named after the
-channel, and the channel lists you followed to your favorites; nothing is lost, and the todos sent and received
+channel, and the channel lists you followed to your favourites; nothing is lost, and the todos sent and received
 stay as they were.
 
 ## Installation

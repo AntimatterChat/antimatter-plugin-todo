@@ -104,7 +104,7 @@ test('tabs: this channel, the favorites (saying where each list is) and mine (wi
     expect(await screen.findByText('No lists here yet. Lists made here are shared with everyone in the channel.')).toBeInTheDocument();
     expect(screen.getByRole('tab', {name: 'This channel'})).toHaveAttribute('aria-selected', 'true');
 
-    fireEvent.click(screen.getByRole('tab', {name: 'Favorites'}));
+    fireEvent.click(screen.getByRole('tab', {name: 'Favourites'}));
     expect(await screen.findByText('Groceries')).toBeInTheDocument();
     expect(screen.getByText('Personal')).toBeInTheDocument();
     expect(screen.getByTitle('Shared with everyone in ~Firmware')).toBeInTheDocument();
@@ -137,7 +137,7 @@ test('open list: back, its name, where it is, the star and its menu; a todo chec
     expect(screen.getByDisplayValue('Launch')).toBeInTheDocument();
     expect(screen.queryByText('Todo')).not.toBeInTheDocument();
     expect(screen.getByRole('img', {name: 'Shared with everyone in ~Firmware'})).toBeInTheDocument();
-    expect(screen.getByRole('button', {name: 'Add to favorites'})).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Add to favourites'})).toBeInTheDocument();
     expect(screen.getByRole('button', {name: 'List actions'})).toBeInTheDocument();
     expect(screen.getByText('Assigned to Bob Ross')).toBeInTheDocument();
     expect(screen.getByText('Overdue')).toBeInTheDocument();
@@ -225,7 +225,7 @@ test('the favorites have no + : a list is made in a channel or in mine', async (
         </>,
         {channel},
     );
-    fireEvent.click(await screen.findByRole('tab', {name: 'Favorites'}));
+    fireEvent.click(await screen.findByRole('tab', {name: 'Favourites'}));
     expect(await screen.findByText('Star a list to find it here, wherever it is.')).toBeInTheDocument();
     expect(screen.queryByRole('button', {name: 'New list in this channel'})).not.toBeInTheDocument();
     expect(screen.queryByRole('button', {name: 'New personal list'})).not.toBeInTheDocument();

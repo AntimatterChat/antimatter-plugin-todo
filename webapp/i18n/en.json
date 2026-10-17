@@ -30,8 +30,8 @@
   "todo.due.tomorrow": "Due tomorrow",
   "todo.edit": "Edit",
   "todo.error": "Something went wrong: {error}",
-  "todo.favorite.add": "Add to favorites",
-  "todo.favorite.remove": "Remove from favorites",
+  "todo.favorite.add": "Add to favourites",
+  "todo.favorite.remove": "Remove from favourites",
   "todo.from": "From {name}",
   "todo.fromMessage": "From a message",
   "todo.inList": "{list} in {channel}",
@@ -82,6 +82,6 @@
   "todo.unassign": "Unassign",
   "todo.view.channel": "This channel",
   "todo.view.conversation": "This conversation",
-  "todo.view.favorites": "Favorites",
+  "todo.view.favorites": "Favourites",
   "todo.view.mine": "Mine"
 }

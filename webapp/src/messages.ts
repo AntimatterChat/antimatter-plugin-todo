@@ -12,7 +12,7 @@ export const messages = defineMessages({
     viewChannel: {id: 'todo.view.channel', defaultMessage: 'This channel'},
     viewConversation: {id: 'todo.view.conversation', defaultMessage: 'This conversation'},
     viewMine: {id: 'todo.view.mine', defaultMessage: 'Mine'},
-    viewFavorites: {id: 'todo.view.favorites', defaultMessage: 'Favorites', description: 'Tab of the Todo panel: the lists the user starred, from any channel'},
+    viewFavorites: {id: 'todo.view.favorites', defaultMessage: 'Favourites', description: 'Tab of the Todo panel: the lists the user starred, from any channel'},
 
     // The lists of a tab
     newListChannel: {id: 'todo.newList.channel', defaultMessage: 'New list in this channel', description: 'Button (+) in the Todo panel header: makes a todo list shared with the channel'},
@@ -22,7 +22,7 @@ export const messages = defineMessages({
     create: {id: 'todo.create', defaultMessage: 'Create', description: 'Button: makes the new todo list'},
     listsChannelEmpty: {id: 'todo.lists.channelEmpty', defaultMessage: 'No lists here yet. Lists made here are shared with everyone in the channel.', description: 'Empty state of the This channel tab'},
     listsConversationEmpty: {id: 'todo.lists.conversationEmpty', defaultMessage: 'No lists here yet. Lists made here are shared with everyone in the conversation.', description: 'Empty state of the This conversation tab'},
-    listsFavoritesEmpty: {id: 'todo.lists.favoritesEmpty', defaultMessage: 'Star a list to find it here, wherever it is.', description: 'Empty state of the Favorites tab'},
+    listsFavoritesEmpty: {id: 'todo.lists.favoritesEmpty', defaultMessage: 'Star a list to find it here, wherever it is.', description: 'Empty state of the Favourites tab'},
     listsMineNote: {id: 'todo.lists.mineNote', defaultMessage: 'Only you can see your personal lists.', description: 'Note under the lists of the Mine tab'},
     archivedLists: {id: 'todo.lists.archived', defaultMessage: 'Archived ({count})', description: 'Folded section of the archived todo lists, with how many there are'},
     openCount: {id: 'todo.lists.open', defaultMessage: '{count, plural, =0 {Nothing left to do} other {# open}}', description: 'Under a todo list\'s name: how many of its todos are still open'},
@@ -42,8 +42,8 @@ export const messages = defineMessages({
     scopeConversation: {id: 'todo.scope.conversation', defaultMessage: 'Conversation', description: 'Chip of a list of a direct or group message'},
     scopeConversationTip: {id: 'todo.scope.conversationTip', defaultMessage: 'Shared with everyone in this conversation', description: 'Tooltip of the chip of a conversation\'s list'},
     scopeSharedTip: {id: 'todo.scope.sharedTip', defaultMessage: 'Shared with everyone in ~{channel}', description: 'Tooltip of the chip of a channel\'s list'},
-    favoriteAdd: {id: 'todo.favorite.add', defaultMessage: 'Add to favorites', description: 'Star button of a todo list'},
-    favoriteRemove: {id: 'todo.favorite.remove', defaultMessage: 'Remove from favorites', description: 'Star button of a todo list in the favorites'},
+    favoriteAdd: {id: 'todo.favorite.add', defaultMessage: 'Add to favourites', description: 'Star button of a todo list'},
+    favoriteRemove: {id: 'todo.favorite.remove', defaultMessage: 'Remove from favourites', description: 'Star button of a todo list in the favourites'},
 
     // An open list
     back: {id: 'todo.back', defaultMessage: 'All lists', description: 'Button back from an open todo list to the lists'},
