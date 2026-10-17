@@ -82,7 +82,7 @@ test('a tab is restored, and the main window reports where the panel goes', asyn
     mockFetch([
         ...base,
         {path: '/api/v1/lists?scope=channel', body: [launch]},
-        {path: '/api/v1/lists?scope=mine', body: [{...launch, id: 'mmmmmmmmmmmmmmmmmmmmmmmmmm', name: 'My todos', scope: 'personal', channel_id: undefined}]},
+        {path: '/api/v1/lists?scope=mine', body: [{...launch, id: 'mmmmmmmmmmmmmmmmmmmmmmmmmm', name: 'My todos', scope: 'personal', channel_id: ''}]},
         {path: `/api/v1/lists/${listId}`, body: {...launch, items: []}},
     ]);
     const setPanelState = jest.fn();

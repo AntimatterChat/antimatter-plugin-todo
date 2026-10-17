@@ -25,6 +25,8 @@ type Call = {method: string; url: string; body?: unknown};
 // sent is the body of the first request matching a method and URL end.
 const sent = (calls: Call[], method: string, end = '') => calls.find((c) => c.method === method && c.url.endsWith(end))?.body;
 const bodies = (calls: Call[], method: string, end: string) => calls.filter((c) => c.method === method && c.url.endsWith(end)).map((c) => c.body);
+const loadsMine = (c: Call) => c.url.includes('scope=mine');
+const deletesLaunch = (c: Call) => c.method === 'DELETE' && c.url.endsWith('/api/v1/lists/l1');
 
 const yesterday = dayOf(new Date(Date.now() - (24 * 60 * 60 * 1000)));
 
@@ -48,7 +50,7 @@ function info(id: string, name: string, extra: Partial<ListInfo> = {}): ListInfo
     };
 }
 
-const personal = (id: string, name: string, extra: Partial<ListInfo> = {}) => info(id, name, {scope: 'personal', channel_id: undefined, channel_name: undefined, ...extra});
+const personal = (id: string, name: string, extra: Partial<ListInfo> = {}) => info(id, name, {scope: 'personal', channel_id: '', channel_name: '', ...extra});
 const item = (id: string, message: string, extra: Partial<Item> = {}): Item => ({id, list_id: 'l1', message, creator_id: 'me', create_at: 1, update_at: 1, ...extra});
 const launch = info('l1', 'Launch', {open_count: 1});
 
@@ -213,7 +215,9 @@ test('makes a list from the + of the header, in the scope of the tab', async () 
     fireEvent.click(screen.getByRole('button', {name: 'Create'}));
     await waitFor(() => expect(bodies(calls, 'POST', '/api/v1/lists')).toContainEqual({name: 'Groceries', channel_id: '', icon: ''}));
 
-    act(() => resetState());
+    // Mine's lists are loaded again, with the new one
+    await waitFor(() => expect(calls.filter(loadsMine).length).toBe(2));
+    await act(async () => null);
 });
 
 test('the favorites have no + : a list is made in a channel or in mine', async () => {
@@ -307,7 +311,7 @@ test('deleting a list asks first, in the page', async () => {
     fireEvent.click(screen.getByRole('button', {name: 'List actions'}));
     fireEvent.click(screen.getByRole('menuitem', {name: 'Delete list'}));
     fireEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', {name: 'Delete'}));
-    await waitFor(() => expect(calls.some((c) => c.method === 'DELETE' && c.url.endsWith('/api/v1/lists/l1'))).toBe(true));
+    await waitFor(() => expect(calls.some(deletesLaunch)).toBe(true));
     expect(await screen.findByRole('tab', {name: 'This channel'})).toBeInTheDocument();
     expect(getState().openListId).toBeNull();
 });

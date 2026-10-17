@@ -91,7 +91,7 @@ func (p *Plugin) ensureList(list *TodoList) (*TodoList, error) {
 	}
 	if stored == nil {
 		// Made here, or by whoever got there first
-		if _, err = kvCreateJSON(p.API, listKey(list.ID), list); err != nil {
+		if _, err = kvCreateJSON(p.API, todoListKey(list.ID), list); err != nil {
 			return nil, err
 		}
 		if stored, err = p.getList(list.ID); err != nil {

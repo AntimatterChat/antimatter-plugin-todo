@@ -87,7 +87,7 @@ export default class Plugin implements PluginClass {
         registry.registerWebSocketEventHandler(`custom_${manifest.id}_refresh`, () => refreshRequests());
         registry.registerWebSocketEventHandler(`custom_${manifest.id}_list_changed`, (msg) => {
             if (typeof msg.data.list_id === 'string') {
-                refreshAfterChange(msg.data.list_id, typeof msg.data.channel_id === 'string' ? msg.data.channel_id : undefined);
+                refreshAfterChange(msg.data.list_id, typeof msg.data.channel_id === 'string' ? msg.data.channel_id : '');
             }
         });
         registry.registerReconnectHandler(() => {

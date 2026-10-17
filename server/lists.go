@@ -101,7 +101,7 @@ type lastUsed struct {
 	ListID    string `json:"list_id"`
 }
 
-func listKey(listID string) string            { return keyListPrefix + listID }
+func todoListKey(listID string) string        { return keyListPrefix + listID }
 func itemsKey(listID string) string           { return keyItemsPrefix + listID }
 func userListsKey(userID string) string       { return keyUserListsPrefix + userID }
 func channelListsKey(channelID string) string { return keyChannelListsPrefix + channelID }
@@ -121,7 +121,7 @@ func scopeKey(list *TodoList) string {
 // getList returns a list, or nil when there's none.
 func (p *Plugin) getList(listID string) (*TodoList, error) {
 	var list TodoList
-	found, err := kvGetJSON(p.API, listKey(listID), &list)
+	found, err := kvGetJSON(p.API, todoListKey(listID), &list)
 	if err != nil || !found {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func (p *Plugin) getList(listID string) (*TodoList, error) {
 }
 
 func (p *Plugin) saveList(list *TodoList) error {
-	_, err := updateKV(p.API, listKey(list.ID), func(stored *TodoList) error {
+	_, err := updateKV(p.API, todoListKey(list.ID), func(stored *TodoList) error {
 		*stored = *list
 		return nil
 	})
@@ -385,7 +385,7 @@ func (p *Plugin) CreateList(userID string, req listRequest) (*ListDetail, error)
 		*ids = append(*ids, list.ID)
 		return nil
 	}); err != nil {
-		if appErr := p.API.KVDelete(listKey(list.ID)); appErr != nil {
+		if appErr := p.API.KVDelete(todoListKey(list.ID)); appErr != nil {
 			p.API.LogWarn("Could not remove a list that couldn't be indexed", "error", appErr.Error())
 		}
 		return nil, err
@@ -474,7 +474,7 @@ func (p *Plugin) DeleteList(userID, listID string) error {
 	if appErr := p.API.KVDelete(itemsKey(list.ID)); appErr != nil {
 		return appErr
 	}
-	if appErr := p.API.KVDelete(listKey(list.ID)); appErr != nil {
+	if appErr := p.API.KVDelete(todoListKey(list.ID)); appErr != nil {
 		return appErr
 	}
 	for _, item := range items {

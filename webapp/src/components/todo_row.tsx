@@ -10,8 +10,6 @@ import Icon from '../ui/icon';
 import {DueMark} from './due';
 import Menu, {type Action} from './menu';
 
-export type {Action} from './menu';
-
 // Text renders a todo's text as a message's Markdown, when the host offers its formatter.
 export function Text({text}: {text: string}) {
     const utils = window.PostUtils;

@@ -104,7 +104,7 @@ export default function Menu({label, actions, small = false}: {label: string; ac
             >
                 <Icon
                     name='dots'
-                    size={small ? 'sm' : undefined}
+                    {...(small ? {size: 'sm' as const} : {})}
                 />
             </button>
             {open && (

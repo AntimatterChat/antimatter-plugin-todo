@@ -214,7 +214,7 @@ export default function ListView({listId, channel}: {listId: string; channel?: C
                     placeholder={intl.formatMessage(messages.addToList, {list: list.name})}
                     personLabel={intl.formatMessage(shared ? messages.assignTo : messages.sendTo)}
                     teamId={teamId}
-                    pickerChannelId={shared ? list.channel_id : undefined}
+                    pickerChannelId={shared ? list.channel_id : ''}
                     onDraftUsed={() => null}
                     onAdd={async ({message, description, person, due}) => {
                         if (person && !shared) {
@@ -223,7 +223,7 @@ export default function ListView({listId, channel}: {listId: string; channel?: C
                             await refreshRequests();
                             return;
                         }
-                        await client.addItem(list.id, {message, description, due: due || undefined, assignee_id: person?.id, channel_id: channel?.id});
+                        await client.addItem(list.id, {message, description, ...(due ? {due} : {}), ...(person ? {assignee_id: person.id} : {}), ...(channel ? {channel_id: channel.id} : {})});
                         changed();
                     }}
                 />
