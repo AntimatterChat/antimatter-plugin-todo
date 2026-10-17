@@ -18,7 +18,7 @@ function hostState(channel?: Channel) {
     return {
         entities: {
             general: {config: {TeammateNameDisplay: 'full_name'}, license: {}},
-            users: {currentUserId: 'me', profiles},
+            users: {currentUserId: 'me', profiles, statuses: {}},
             teams: {currentTeamId: 'team1', teams: {team1: {id: 'team1', name: 'lumen'}}},
             channels: {currentChannelId: channel?.id || '', channels: channel ? {[channel.id]: channel} : {}},
             preferences: {myPreferences: {}},

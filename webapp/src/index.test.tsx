@@ -103,7 +103,8 @@ test('tabs: this channel, the favorites (saying where each list is) and mine (wi
     ]);
     renderWithHost(<TodoPanel/>, {channel});
 
-    expect(await screen.findByText('No lists here yet. Lists made here are shared with everyone in the channel.')).toBeInTheDocument();
+    expect(await screen.findByText('No lists here yet')).toBeInTheDocument();
+    expect(screen.getByText('Every member of the channel can edit the lists added here.')).toBeInTheDocument();
     expect(screen.getByRole('tab', {name: 'This channel'})).toHaveAttribute('aria-selected', 'true');
 
     fireEvent.click(screen.getByRole('tab', {name: 'Favourites'}));
@@ -185,7 +186,7 @@ test('a read-only list shows its todos without a form, checkboxes or actions', a
     expect(screen.getByDisplayValue('Launch')).toHaveAttribute('readonly');
 });
 
-test('makes a list from the + of the header, in the scope of the tab', async () => {
+test('makes a list from the + of the tab\'s header row, in the scope of the tab', async () => {
     const calls = mockFetch([
         ...base(),
         {path: '/api/v1/lists?scope=channel', body: []},

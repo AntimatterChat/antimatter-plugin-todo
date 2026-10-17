@@ -4,8 +4,9 @@
  *
  * Under Fusion, the panel uses Fusion's app panel classes (am-app-panel, am-app-h, am-app-row,
  * am-seg...) and tokens (--am-*); under the classic UI, their amt- equivalents below, in the
- * theme's colours. The rows, forms, chips and menus are the plugin's own, in either UI's colours;
- * menus and pickers are drawn over the page, in Fusion's layer.
+ * theme's colours, laid out as Notes' and Whiteboard's panels are. The tiles, forms, chips and
+ * menus are the plugin's own, in either UI's colours; menus and pickers are drawn over the page,
+ * in Fusion's layer.
  */
 
 .amt-panel, .amt-post, .amt-picker, .amt-menu, .amt-icons, .amt-head, .amt-bar {
@@ -24,8 +25,10 @@
     --amt-soon: var(--am-spark, #c27d0e);
     --amt-shadow: var(--am-shadow, 0 8px 24px rgba(0, 0, 0, 0.24));
 
-    /* The app's colour (the app bar's icon), darker on light themes to stay readable */
+    /* The app's colour (the app bar's icon), darker on light themes to stay readable; Fusion's
+       empty states take it as --am-cc */
     --amt-app: #34D399;
+    --am-cc: var(--amt-app);
 }
 :root[data-am-theme="light"] :is(.amt-panel, .amt-post, .amt-picker, .amt-menu, .amt-icons, .amt-head, .amt-bar) { --amt-app: #059669; }
 @media (prefers-color-scheme: light) {
@@ -39,29 +42,40 @@
 
 .amt-panel { color: var(--amt-fg); font-size: 14px; }
 .amt-panel button { font: inherit; }
-.amt-seg { display: flex; }
-.amt-seg button { flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* The tabs, across the panel (Fusion's .am-seg; the classic UI's .amt-seg, below), with Mine's count */
+:is(.am-app, .am-layer) .am-todo-seg { display: flex; margin-bottom: 4px; }
+:is(.am-app, .am-layer) .am-todo-seg button { flex: 1; }
+:is(.amt-seg, .am-todo-seg) button { min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .amt-count { min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--amt-accent); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
 .amt-toggle { width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
 .amt-list { display: grid; gap: 6px; }
 .amt-grow { flex: 1; min-width: 0; }
 
-/* Fusion's empty state: the app's icon over a muted line */
+/* The + of a tab's header row, on the right of what the tab is (as in Notes and Whiteboard) */
+:is(.am-app, .am-layer) .am-todo-h-btn { width: 26px; height: 26px; color: var(--am-muted); }
+:is(.am-app, .am-layer) .am-todo-h-btn:hover { background: var(--am-hover); color: var(--am-text); }
+
+/* A tab without lists, under the classic UI: the shared empty state (components/fusion/) in the
+   classic UI's look, as Notes' */
+.amt-todo-empty { padding: 10px 12px; color: var(--amt-muted); font-size: 13px; }
+.amt-todo-empty b { display: block; font-weight: 600; }
+.amt-todo-empty p { margin: 0; }
+
+/* The open list's empty state: the app's icon over a muted line */
 .amt-empty { display: grid; justify-items: center; gap: 8px; padding: 22px 14px; border-radius: 9px; background: var(--amt-side); color: var(--amt-muted); font-size: 13px; text-align: center; }
 .amt-empty .am-ic, .amt-empty .icon { width: 26px; height: 26px; font-size: 24px; color: var(--amt-app); opacity: 0.8; }
 .amt-note { font-size: 12.5px; }
 .amt-muted { color: var(--amt-muted); }
 .amt-error { padding: 7px 10px; border-radius: 8px; background: color-mix(in srgb, var(--amt-danger) 12%, transparent); color: var(--amt-danger); font-size: 13px; }
 
-/* The panel's header: "Todo" and the + over the lists; back, the list's tile, name, scope, star and
-   actions over an open list. */
+/* The panel's header: "Todo" over the lists (whose + is in the tab's header row); back, the list's
+   tile, name, scope, star and actions over an open list. */
 .amt-head { flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; color: var(--amt-fg); }
 .amt-head button { border: 0; background: none; color: inherit; cursor: pointer; }
 .amt-head-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .amt-head-slot { display: flex; align-items: center; gap: 2px; min-width: 0; }
 .amt-head-open .amt-head-slot { flex: 1; }
 .amt-bar { display: flex; align-items: center; gap: 6px; margin: -10px -12px 0; padding: 6px 8px; border-bottom: 1px solid var(--amt-line); }
-.amt-h-btn { width: 32px; height: 32px; }
 /* Over an open list, its back button (a chevron and the app's icon) takes the place of the panel's app icon. */
 :is(.am-app, .am-layer) .am-rhs-classic:has(.amt-head-open) .am-rhs-app-ic { display: none; }
 :is(.am-app, .am-layer) .am-rhs-classic:has(.amt-head-open):has(.am-rhs-app-ic) .sidebar--right__title { padding-left: 0; }
@@ -85,13 +99,12 @@ input.amt-title:focus { border-color: var(--amt-accent); background: var(--amt-b
 .amt-tile-lock { position: absolute; right: -4px; bottom: -4px; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--amt-side); color: var(--amt-app); }
 .amt-tile-lock .am-ic, .amt-tile-lock .icon { width: 10px; height: 10px; font-size: 10px; }
 
-/* The lists of a tab */
+/* The lists of a tab, Fusion's app rows (as Notes' and Whiteboard's) */
 .amt-list-row { cursor: pointer; }
 .amt-list-main { min-width: 0; display: grid; }
 .amt-list-main b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .amt-sub { display: flex !important; align-items: center; gap: 8px; min-width: 0; }
-.amt-list-count { min-width: 20px; color: var(--amt-muted); font-size: 12px; font-weight: 700; text-align: right; }
-.amt-archived .amt-list-row { opacity: 0.75; }
+.amt-list-row.amt-list-archived { opacity: 0.75; }
 .amt-new-list { padding: 8px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-side); }
 
 /* Where a list is */
@@ -187,15 +200,16 @@ input.amt-title:focus { border-color: var(--amt-accent); background: var(--amt-b
 .amt-post-todo p { margin: 0; }
 .amt-post-link { display: inline-block; margin-top: 4px; color: var(--amt-accent); font-size: 12.5px; }
 
-/* Classic UI: Fusion's app panel classes */
-.amt-app-panel { display: grid; gap: 10px; align-content: start; padding: 10px 12px 16px; }
+/* Classic UI: Fusion's app panel classes, as Notes and Whiteboard draw them */
+.amt-app-panel { display: grid; gap: 8px; align-content: start; padding: 10px 12px 16px; }
 .amt-app-h { display: flex; align-items: center; gap: 8px; margin: 6px 2px 0; color: var(--amt-muted); font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
-.amt-app-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; padding: 9px 10px; border: 0; border-radius: 9px; background: var(--amt-side); color: var(--amt-fg); text-align: left; }
+.amt-app-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; padding: 9px 10px; border: 0; border-radius: 8px; background: var(--amt-side); color: var(--amt-fg); text-align: left; }
 .amt-app-row:hover { background: var(--amt-raise); }
-.amt-app-row b { display: block; font-size: 13.5px; }
+.amt-app-row b { display: block; font-size: 14px; }
 .amt-app-row .amt-sub { font-size: 12px; color: var(--amt-muted); }
-.amt-seg.amt-seg { padding: 3px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-side); gap: 2px; }
-.amt-seg button { height: 30px; border: 0; border-radius: 7px; background: none; color: var(--amt-muted); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+.amt-todo-h-btn { width: 26px; height: 26px; }
+.amt-seg { display: flex; gap: 2px; margin-bottom: 4px; padding: 3px; border: 1px solid var(--amt-line); border-radius: 8px; }
+.amt-seg button { flex: 1; height: 30px; border: 0; border-radius: 6px; background: none; color: var(--amt-muted); font-weight: 600; font-size: 13.5px; cursor: pointer; }
 .amt-seg button.amt-on { background: var(--amt-raise); color: var(--amt-fg); }
 
 /* The todos of a shared list (a channel's) carry the app's colour; your own lists' don't. */
@@ -214,7 +228,7 @@ input.amt-title:focus { border-color: var(--amt-accent); background: var(--amt-b
     .amt-add-row { flex-wrap: wrap; }
     .amt-add-row input { flex-basis: 100%; }
     .amt-add-row .amt-btn { flex: 1; }
-    .amt-seg button { font-size: 12.5px; padding: 0 6px; }
+    .amt-seg button, :is(.am-app, .am-layer) .am-todo-seg button { font-size: 12.5px; padding: 0 6px; }
     .amt-row { padding: 9px 6px 9px 8px; gap: 8px; }
     .amt-confirm .amt-edit-actions .amt-btn { flex: 1; }
 }
