@@ -31,6 +31,8 @@ const (
 	alice    = "a0000000000000000000000000"
 	bob      = "b0000000000000000000000000"
 	carol    = "k0000000000000000000000000" // town's admin
+	dana     = "n0000000000000000000000000" // in town, an admin of the community
+	sam      = "s0000000000000000000000000" // in town, a system admin
 	reader   = "e0000000000000000000000000" // in news, where only admins post
 	guest    = "g0000000000000000000000000" // a guest, in town
 	visitor  = "v0000000000000000000000000" // a guest in no channel
@@ -47,9 +49,12 @@ type fakeAPI struct {
 	channels map[string]*model.Channel
 	members  map[string][]string
 	readOnly map[string][]string
-	admins   map[string][]string
-	users    map[string]*model.User
-	posts    map[string]*model.Post
+	admins   map[string][]string // channel admins, by channel
+	// teamAdmins may manage the community; systemAdmins the server.
+	teamAdmins   []string
+	systemAdmins []string
+	users        map[string]*model.User
+	posts        map[string]*model.Post
 
 	dms       map[string][]string // bot messages, by person
 	replies   []*model.Post       // bot answers in threads
@@ -72,7 +77,7 @@ func newFakeAPI() *fakeAPI {
 			elsewher: {Id: elsewher, Name: "elsewhere", DisplayName: "Elsewhere", Type: model.ChannelTypePrivate, TeamId: teamID},
 		},
 		members: map[string][]string{
-			town:     {alice, bob, carol, guest},
+			town:     {alice, bob, carol, guest, dana, sam},
 			news:     {alice, reader},
 			attic:    {alice, bob},
 			dmAB:     {alice, bob},
@@ -80,13 +85,16 @@ func newFakeAPI() *fakeAPI {
 		},
 		readOnly: map[string][]string{news: {reader}},
 		admins:   map[string][]string{town: {carol}},
-		users:    map[string]*model.User{},
-		posts:    map[string]*model.Post{},
-		dms:      map[string][]string{},
+
+		teamAdmins:   []string{dana},
+		systemAdmins: []string{sam},
+		users:        map[string]*model.User{},
+		posts:        map[string]*model.Post{},
+		dms:          map[string][]string{},
 
 		ephemeral: map[string][]string{},
 	}
-	for id, name := range map[string]string{alice: "alice", bob: "bob", carol: "carol", reader: "reader", guest: "gus", visitor: "vic", outsider: "otto"} {
+	for id, name := range map[string]string{alice: "alice", bob: "bob", carol: "carol", dana: "dana", sam: "sam", reader: "reader", guest: "gus", visitor: "vic", outsider: "otto"} {
 		f.users[id] = &model.User{Id: id, Username: name}
 	}
 	f.users[guest].Roles = model.SystemGuestRoleId
@@ -212,7 +220,8 @@ func (f *fakeAPI) GetChannelMember(channelID, userID string) (*model.ChannelMemb
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	if f.isMember(channelID, userID) {
-		return &model.ChannelMember{ChannelId: channelID, UserId: userID}, nil
+		admin := slices.Contains(f.admins[channelID], userID)
+		return &model.ChannelMember{ChannelId: channelID, UserId: userID, SchemeUser: true, SchemeAdmin: admin}, nil
 	}
 	return nil, model.NewAppError("GetChannelMember", "not found", nil, "", http.StatusNotFound)
 }
@@ -229,9 +238,21 @@ func (f *fakeAPI) HasPermissionToChannel(userID, channelID string, permission *m
 	case model.PermissionCreatePost.Id:
 		return !slices.Contains(f.readOnly[channelID], userID)
 	case model.PermissionManagePublicChannelProperties.Id, model.PermissionManagePrivateChannelProperties.Id:
-		return slices.Contains(f.admins[channelID], userID)
+		// As on a new server: every member may rename the channel.
+		return true
 	}
 	return false
+}
+
+func (f *fakeAPI) HasPermissionToTeam(userID, team string, permission *model.Permission) bool {
+	if permission.Id == model.PermissionManageTeam.Id && team == teamID {
+		return slices.Contains(f.teamAdmins, userID) || slices.Contains(f.systemAdmins, userID)
+	}
+	return slices.Contains(f.systemAdmins, userID)
+}
+
+func (f *fakeAPI) HasPermissionTo(userID string, permission *model.Permission) bool {
+	return slices.Contains(f.systemAdmins, userID)
 }
 
 func (f *fakeAPI) GetTeamsForUser(string) ([]*model.Team, *model.AppError) {
