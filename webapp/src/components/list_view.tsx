@@ -100,7 +100,8 @@ export default function ListView({listId, channel}: {listId: string; channel?: C
     if (!list) {
         let failure = '';
         if (entry?.error) {
-            failure = entry.status === 404 ? intl.formatMessage(messages.listNotFound) : entry.error;
+            // Gone, or not theirs (anymore): a list one can't open is "not found"
+            failure = entry.status === 404 || entry.status === 403 ? intl.formatMessage(messages.listNotFound) : entry.error;
         }
         return (
             <div className={cx('app-panel') + ' amt-panel'}>

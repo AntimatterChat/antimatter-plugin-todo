@@ -188,6 +188,42 @@ export function panelOpened(channelId: string) {
     closedIn = null;
 }
 
+// Where the panel is, for a panel opened in a new window (the host's setPanelState): an open list
+// ('list/<id>'), or the tab it shows ('view/favorites', 'view/mine'; nothing for this channel's).
+// A todo being added from a message isn't kept: it's a moment, not a place.
+export const panelStateOf = (s: State) => {
+    if (s.openListId) {
+        return `list/${s.openListId}`;
+    }
+    return s.view === 'channel' ? '' : `view/${s.view}`;
+};
+
+// restorePanel puts the panel where it was in the window it was popped out of, as it first renders:
+// quietly, as the panel reads it right after; panelRestored then tells the others (the header). The
+// state comes from the window's address: anything this app didn't write opens the lists, and a list
+// is fetched again as the person signed in here (one they can't open shows its not-found view).
+export function restorePanel(panelState?: string): boolean {
+    const [kind, id, ...rest] = (panelState || '').split('/');
+    if (rest.length || !id) {
+        return false;
+    }
+    if (kind === 'list' && (/^[a-z0-9]{26}$/).test(id)) {
+        state = {...state, openListId: id, draft: null};
+        closedIn = null;
+        return true;
+    }
+    if (kind === 'view' && (id === 'favorites' || id === 'mine')) {
+        state = {...state, view: id, openListId: null};
+        closedIn = null;
+        return true;
+    }
+    return false;
+}
+
+export function panelRestored() {
+    listeners.forEach((l) => l());
+}
+
 export function setShowPanel(show: () => void) {
     showPanel = show;
 }

@@ -22,19 +22,27 @@ export type RightHandSidebarRegistration = {
     toggleRHSPlugin: AnyAction;
 };
 
+// The props Antimatter's Fusion UI gives an app's panel: where the panel is goes to setPanelState
+// (a short string, null for its home), and a panel opened in a new window gets it back as
+// initialPanelState (untrusted: it comes from the window's address). Other hosts give neither.
+export type PanelProps = {
+    setPanelState?: (state: string | null) => void;
+    initialPanelState?: string;
+};
+
 // The subset of the host's plugin registry this plugin uses.
 export interface PluginRegistry {
     registerRootComponent(component: React.ComponentType): string;
     registerPostTypeComponent(type: string, component: React.ComponentType<{post: Post}>): string;
     registerWebSocketEventHandler(event: string, handler: (msg: WebSocketMessage) => void): void;
     registerReconnectHandler(handler: () => void): void;
-    registerRightHandSidebarComponent(component: React.ComponentType, title: React.ReactNode): RightHandSidebarRegistration;
+    registerRightHandSidebarComponent(component: React.ComponentType<PanelProps>, title: React.ReactNode): RightHandSidebarRegistration;
     registerChannelHeaderButtonAction(icon: React.ReactNode, action: (channel: Channel) => void, dropdownText: React.ReactNode, tooltipText: React.ReactNode): string;
     registerPostDropdownMenuAction(text: React.ReactNode, action: (postId: string) => void, filter?: (postId: string) => boolean): string;
     registerAppBarComponent?(options: {
         iconUrl: string;
         tooltipText: React.ReactNode;
-        rhsComponent: React.ComponentType;
+        rhsComponent: React.ComponentType<PanelProps>;
         rhsTitle: React.ReactNode;
     }): {id: string; rhsComponent: RightHandSidebarRegistration} | string;
 }
