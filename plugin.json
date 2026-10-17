@@ -1,7 +1,7 @@
 {
     "id": "com.mattermost.plugin-todo",
     "name": "Todo",
-    "description": "Todo lists: your own, the ones you send and receive, and a shared list for every channel.",
+    "description": "Todo lists: shared lists in channels and conversations, your own lists, and todos you send each other.",
     "homepage_url": "https://github.com/antimatterchat/antimatter-plugin-todo",
     "support_url": "https://github.com/antimatterchat/antimatter-plugin-todo/issues",
     "version": "0.8.0",

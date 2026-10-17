@@ -1,27 +1,43 @@
 # Antimatter Todo Plugin
 
-Todo lists for [Antimatter](https://github.com/antimatterchat/antimatter): a shared list in every channel, your own
-list, and todos you send to people and receive from them, with a daily reminder.
+Todo lists for [Antimatter](https://github.com/antimatterchat/antimatter): lists shared in channels and
+conversations, your own lists, and todos you send to people and receive from them, with a daily reminder.
 
 <img src="assets/screenshot.png" width="440" alt="The Todo panel: the shared todo list of a channel, with an assigned todo and a done one" />
 
 ## Using it
 
-Open **Todo** from the app bar (or the channel header). Its panel has two views:
+Open **Todo** from the app bar (or the channel header). Like Notes, the panel lists lists, in three tabs:
 
-- **This channel**: the channel's todo list, shared by its members. Everyone who can post in the channel adds
-  todos, checks them off, edits them, assigns them to a member and moves them to the top; their author and the
-  channel's admins delete them. Done todos are folded under the open ones. People who can only read the
-  channel (a read-only or archived one) see the list without changing it.
-- **Mine**: your own todos, the channel todos assigned to you, the todos people sent you (accept, mark as done
-  or decline them), and the ones you sent (remind the person or cancel).
+- **This channel** (or **This conversation**): the channel's lists, shared by its members. The **+** in the panel's
+  header makes one.
+- **Favorites**: the lists you starred, from any channel, and your own.
+- **Mine**: your personal lists (only you see them; **My todos** is always there), then the todos assigned to you
+  in channels, the todos people sent you (accept, mark as done or decline them), and the ones you sent (remind the
+  person or cancel).
 
-A message's **Add to todo** starts a todo with its text, linked to the message, in the channel's list or your
-own. When someone assigns you a channel todo or sends you one, the Todo bot tells you, and its message lets you
-answer. Once a day, the bot reminds you of your todos and the ones assigned to you.
+Each list shows how many todos are left, and whether one is due soon or overdue. Open a list to add todos (with
+details and a due date), check them off, edit them, assign them to a member of the channel (in a personal list:
+send them to someone), and move them to the top; done todos are folded under the open ones. Its header has the
+way back to the lists, its name (click to rename it), whom it's shared with, a star and a menu: rename, change its
+icon, archive (read-only, folded under **Archived**) or delete it. Everyone who can post in the channel changes a
+channel's lists and their todos; the list's creator and the channel's admins delete it, and a todo's author and the
+channel's admins delete the todo. People who can only read the channel (a read-only or archived one) see its lists
+without changing them; people outside the channel don't see them at all.
 
-The `/todo` command still works: `/todo add`, `/todo list [my|in|out]`, `/todo pop`, `/todo send @someone`,
-`/todo settings summary [on|off]` and `/todo settings allow_incoming_task_requests [on|off]`.
+A message's **Add to todo** starts a todo with its text, linked to the message, and asks which list it goes to:
+the list you last added to from that channel, else the channel's first list, else **My todos**. When someone
+assigns you a todo or sends you one, the Todo bot tells you, and its message lets you answer. Once a day, the bot
+reminds you of the todos of your lists and the ones assigned to you.
+
+The `/todo` command works too: `/todo lists`, `/todo new <name>` (`--personal` for a list of your own),
+`/todo add <message>` or `/todo add <list>: <message>`, `/todo list [my|in|out]`, `/todo pop`,
+`/todo send @someone <message>`, `/todo settings summary [on|off]` and
+`/todo settings allow_incoming_task_requests [on|off]`.
+
+Upgrading from a version without lists moves your todos to **My todos**, each channel's to a list named after the
+channel, and the channel lists you followed to your favorites; nothing is lost, and the todos sent and received
+stay as they were.
 
 ## Installation
 
