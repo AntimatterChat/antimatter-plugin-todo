@@ -8,9 +8,10 @@ import {useIntl} from 'react-intl';
 import {messages} from '../messages';
 import {clearHeadSlot, setHeadSlot, useHeadSlot, useTodoState} from '../state';
 
-// TodoHeader is the title the app gives the host's panel header: "Todo" over the lists, and a row
-// where the lists and the open list draw their own header (the + for a new list; back, the list's
-// name and its actions), so that the app has one header, the panel's, as Notes does.
+// TodoHeader is the title the app gives the host's panel header: "Todo" over the lists (whose + is
+// in the tab's header row, under the tabs), and a row where the open list draws its own header
+// (back, the list's name and its actions), so that a list has one header, the panel's, as a note
+// does.
 export default function TodoHeader() {
     const intl = useIntl();
     const open = useTodoState((s) => Boolean(s.openListId || s.draft));

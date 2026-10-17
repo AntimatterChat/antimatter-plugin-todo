@@ -31,8 +31,8 @@ const REMINDER_IDLE = 60 * 60 * 1000;
 
 const title = <FormattedMessage {...messages.app}/>;
 
-// The panel's header shows the app's own: "Todo" and the + over the lists, back and the list's
-// name and actions over an open list.
+// The panel's header shows the app's own: "Todo" over the lists (whose + is in the tab's header
+// row, as in Notes and Whiteboard), back and the list's name and actions over an open list.
 const header = <TodoHeader/>;
 
 export default class Plugin implements PluginClass {

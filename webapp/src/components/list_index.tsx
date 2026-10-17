@@ -11,22 +11,23 @@ import type {IndexKey} from '../client';
 import {messages} from '../messages';
 import {channelKey, openList, refreshIndex, setView, useIndex, useTodoState, type View} from '../state';
 import type {ListInfo} from '../types/todo';
-import Icon from '../ui/icon';
-import {cx} from '../ui/web_ui';
+import Icon, {type IconName} from '../ui/icon';
+import {cx, isFusionUI} from '../ui/web_ui';
 
 import {DueMark} from './due';
+import EmptyState from './fusion/empty_state';
+import {iconTip} from './fusion/tip';
 import Requests from './requests';
 import ScopeChip, {ListTile} from './scope';
-import {HeadPortal} from './todo_header';
 
-// ListRow is a list in the list of lists: its icon, name, how much is left and what's due, and
-// (in the favorites, which mix them) where it is.
+// ListRow is a list in the list of lists, as Notes and Whiteboard draw their rows: its tile, its name, how much is
+// left and what's due, and (in the favorites, which mix them) where it is, or a lock if one can't change it.
 function ListRow({list, showScope}: {list: ListInfo; showScope: boolean}) {
     const intl = useIntl();
     return (
         <button
             type='button'
-            className={cx('app-row') + ' amt-list-row'}
+            className={cx('app-row') + ' amt-list-row' + (list.archived_at ? ' amt-list-archived' : '')}
             onClick={() => openList(list.id)}
         >
             <ListTile list={list}/>
@@ -40,7 +41,7 @@ function ListRow({list, showScope}: {list: ListInfo; showScope: boolean}) {
                     />
                 </span>
             </span>
-            {showScope ? <ScopeChip list={list}/> : <span className='amt-list-count'>{list.open_count || ''}</span>}
+            {showScope ? <ScopeChip list={list}/> : !list.can_edit && <span className={cx('sub')}><Icon name='lock'/></span>}
         </button>
     );
 }
@@ -117,36 +118,91 @@ function NewListForm({channelId, onDone}: {channelId?: string; onDone: () => voi
     );
 }
 
-function Lists({index, showScope, empty}: {index?: {lists?: ListInfo[]; error?: string} | null; showScope: boolean; empty: string}) {
+type SectionProps = {
+    showScope: boolean;
+
+    // What the tab is: "Shared with {channel}", "Favourites" or "Personal lists", on the left of its header row
+    title: string;
+    index?: {lists?: ListInfo[]; error?: string} | null;
+
+    // What the tab shows without lists: an icon (under Fusion), a title and a sentence.
+    empty: {icon: IconName; title: string; text: string};
+
+    // The + on the right of the header row, opening the form making a list in the tab's scope (under the row): none
+    // in the favourites, nor in an archived channel. Under Fusion, the empty tab also offers it as its one action.
+    create?: {label: string; open: boolean; onToggle: () => void; form: React.ReactNode} | null;
+};
+
+// Section is the lists of the tab picked above it, as Notes and Whiteboard show theirs: a header row (what the tab
+// is, and the + making a list there), the new list's form when open, then the lists, or the tab's empty state, and
+// the archived ones, folded.
+function Section({title, index, empty, create, showScope}: SectionProps) {
     const intl = useIntl();
     const [showArchived, setShowArchived] = useState(false);
-    if (index?.error && !index.lists) {
-        return <div className='amt-error'>{index.error}</div>;
+    const plusIcon = (
+        <Icon
+            name='plus'
+            size='sm'
+        />
+    );
+    const lists = index?.lists;
+    const active = lists?.filter((l) => !l.archived_at) || [];
+    const archived = lists?.filter((l) => l.archived_at) || [];
+    const row = (list: ListInfo) => (
+        <ListRow
+            key={list.id}
+            list={list}
+            showScope={showScope}
+        />
+    );
+
+    let body: React.ReactNode;
+    if (active.length) {
+        body = active.map(row);
+    } else if (lists) {
+        body = (
+            <EmptyState
+                icon={<Icon name={empty.icon}/>}
+                title={empty.title}
+                text={empty.text}
+                {...(create && !create.open && isFusionUI() ? {action: {label: create.label, onClick: create.onToggle, icon: plusIcon}} : {})}
+                classicClassName={cx('todo-empty')}
+                data-testid='todo-empty'
+            />
+        );
+    } else if (index?.error) {
+        body = <div className='amt-error'>{index.error}</div>;
+    } else {
+        body = (
+            <EmptyState
+                busy={true}
+                text={intl.formatMessage(messages.listsLoading)}
+                classicClassName={cx('todo-empty')}
+                data-testid='todo-empty'
+            />
+        );
     }
-    if (!index?.lists) {
-        return <div className={cx('empty') + ' amt-empty'}>{'…'}</div>;
-    }
-    const active = index.lists.filter((l) => !l.archived_at);
-    const archived = index.lists.filter((l) => l.archived_at);
     return (
         <>
-            {active.length === 0 && (
-                <div className={cx('empty') + ' amt-empty'}>
-                    <Icon name='checkbox'/>
-                    <span>{empty}</span>
-                </div>
-            )}
-            {active.length > 0 && (
-                <div className='amt-list'>
-                    {active.map((list) => (
-                        <ListRow
-                            key={list.id}
-                            list={list}
-                            showScope={showScope}
-                        />
-                    ))}
-                </div>
-            )}
+            <div
+                className={cx('app-h')}
+                data-testid='todo-section-head'
+            >
+                <span className={cx('grow')}>{title}</span>
+                {create && (
+                    <button
+                        type='button'
+                        className={cx('icon-btn', 'todo-h-btn')}
+                        {...iconTip(create.label)}
+                        aria-pressed={create.open}
+                        onClick={create.onToggle}
+                    >
+                        {plusIcon}
+                    </button>
+                )}
+            </div>
+            {create?.open && create.form}
+            {body}
             {archived.length > 0 && (
                 <>
                     <button
@@ -158,26 +214,16 @@ function Lists({index, showScope, empty}: {index?: {lists?: ListInfo[]; error?: 
                         <span className={cx('grow')}>{intl.formatMessage(messages.archivedLists, {count: archived.length})}</span>
                         <span aria-hidden='true'>{showArchived ? '▾' : '▸'}</span>
                     </button>
-                    {showArchived && (
-                        <div className='amt-list amt-archived'>
-                            {archived.map((list) => (
-                                <ListRow
-                                    key={list.id}
-                                    list={list}
-                                    showScope={showScope}
-                                />
-                            ))}
-                        </div>
-                    )}
+                    {showArchived && archived.map(row)}
                 </>
             )}
         </>
     );
 }
 
-// ListIndex is the list of lists: the tabs (this channel's, the favorites, the user's own), the
-// + of the panel's header making a list in the tab's scope, and the tab's lists. Mine also has the
-// todos assigned to the user and those sent to them and by them.
+// ListIndex is the list of lists, laid out as Notes' and Whiteboard's: the tabs (this channel's, the favorites, the
+// user's own), the tab's header row (what it is, and the + making a list there, its form opening under the row), and
+// the tab's lists. Mine also has the todos assigned to the user and those sent to them and by them.
 export default function ListIndex({channel}: {channel?: Channel}) {
     const intl = useIntl();
     const view = useTodoState((s) => s.view);
@@ -193,7 +239,7 @@ export default function ListIndex({channel}: {channel?: Channel}) {
     const index = useIndex(key);
     const requestCount = useTodoState((s) => (s.requests.lists?.in.length || 0) + (s.requests.assigned?.length || 0));
 
-    // The new list button: a list of the channel in its tab (unless it's archived), a personal one
+    // The tab's + opens the new list's form: a list of the channel in its tab (unless it's archived), a personal one
     // in Mine; the favorites have none.
     let createLabel = '';
     if (shown === 'channel' && channel && !channel.delete_at) {
@@ -201,6 +247,17 @@ export default function ListIndex({channel}: {channel?: Channel}) {
     } else if (shown === 'mine') {
         createLabel = intl.formatMessage(messages.newListPersonal);
     }
+    const create = createLabel ? {
+        label: createLabel,
+        open: creating,
+        onToggle: () => setCreating((c) => !c),
+        form: (
+            <NewListForm
+                channelId={shown === 'channel' ? channel?.id : ''}
+                onDone={() => setCreating(false)}
+            />
+        ),
+    } : null;
 
     const tab = (v: View, label: string, count = 0) => (
         <button
@@ -218,47 +275,44 @@ export default function ListIndex({channel}: {channel?: Channel}) {
         </button>
     );
 
-    let empty = intl.formatMessage(messages.listsFavoritesEmpty);
-    if (shown === 'channel') {
-        empty = intl.formatMessage(conversation ? messages.listsConversationEmpty : messages.listsChannelEmpty);
+    const channelName = conversation ? intl.formatMessage(messages.listsConversationName) : channel?.display_name || '';
+    let section: Omit<SectionProps, 'index' | 'create'> | null = null;
+    if (shown === 'favorites') {
+        section = {
+            title: intl.formatMessage(messages.listsFavorites),
+            empty: {icon: 'star', title: intl.formatMessage(messages.listsFavoritesEmptyTitle), text: intl.formatMessage(messages.listsFavoritesEmpty)},
+            showScope: true,
+        };
+    } else if (shown === 'channel' && channel) {
+        section = {
+            title: intl.formatMessage(messages.listsChannel, {channel: channelName}),
+            empty: {icon: 'checkbox', title: intl.formatMessage(messages.listsChannelEmptyTitle), text: intl.formatMessage(conversation ? messages.listsConversationEmptyText : messages.listsChannelEmptyText)},
+            showScope: false,
+        };
+    } else if (shown === 'mine') {
+        section = {
+            title: intl.formatMessage(messages.listsPersonal),
+            empty: {icon: 'lock', title: intl.formatMessage(messages.listsPersonalEmptyTitle), text: intl.formatMessage(messages.listsMineNote)},
+            showScope: false,
+        };
     }
 
     return (
-        <div className={cx('app-panel') + ' amt-panel'}>
-            {createLabel && (
-                <HeadPortal>
-                    <span className='amt-grow'/>
-                    <button
-                        type='button'
-                        className='amt-icon-btn amt-h-btn'
-                        title={createLabel}
-                        aria-label={createLabel}
-                        aria-pressed={creating}
-                        onClick={() => setCreating((c) => !c)}
-                    >
-                        <Icon name='plus'/>
-                    </button>
-                </HeadPortal>
-            )}
+        <div className={cx('app-panel', 'todo-list') + ' amt-panel'}>
             <div
-                className={cx('seg') + ' amt-seg'}
+                className={cx('seg', 'todo-seg')}
                 role='tablist'
             >
                 {channel && tab('channel', intl.formatMessage(conversation ? messages.viewConversation : messages.viewChannel))}
                 {tab('favorites', intl.formatMessage(messages.viewFavorites))}
                 {tab('mine', intl.formatMessage(messages.viewMine), requestCount)}
             </div>
-            {creating && createLabel && (
-                <NewListForm
-                    channelId={shown === 'channel' ? channel?.id : ''}
-                    onDone={() => setCreating(false)}
-                />
-            )}
-            {key && (
-                <Lists
+            {section && (
+                <Section
+                    key={key || ''}
+                    {...section}
                     index={index}
-                    showScope={shown === 'favorites'}
-                    empty={empty}
+                    create={create}
                 />
             )}
             {shown === 'mine' && (
