@@ -34,8 +34,8 @@ new --personal [name]
 	Makes a todo list only you see.
 
 add [message]
-	Adds a todo to the list you last added to from this channel, else to the channel's first list,
-	else to your list "My todos".
+	Adds a todo to your list "My todos" (or to the personal list you last added to from this
+	channel). Only you see it.
 
 	example: /todo add Don't forget to be awesome
 
@@ -313,7 +313,22 @@ func (p *Plugin) findList(userID, channelID, name string) *TodoList {
 	return nil
 }
 
-// runAddCommand adds a todo: to the list named before a colon, or else to the default list.
+// commandTarget is the list "/todo add" adds to when no list is named: the list last used from the
+// channel if it's one of the person's own, else their default list. Never a shared list unasked:
+// the command doesn't show where the todo goes before it's added (the message's "Add to todo"
+// does, and offers the channel's lists).
+func (p *Plugin) commandTarget(userID, channelID string) (*TodoList, error) {
+	if last := p.lastUsedList(userID, channelID); last != "" {
+		if list, err := p.getList(last); err == nil && list != nil && list.ChannelID == "" {
+			if rights, err := p.listRights(userID, list); err == nil && rights.Edit {
+				return list, nil
+			}
+		}
+	}
+	return p.ensurePersonal(userID)
+}
+
+// runAddCommand adds a todo: to the list named before a colon, or else to a personal list.
 func (p *Plugin) runAddCommand(args []string, extra *model.CommandArgs) (bool, error) {
 	message := strings.Join(args, " ")
 
@@ -330,7 +345,7 @@ func (p *Plugin) runAddCommand(args []string, extra *model.CommandArgs) (bool, e
 	}
 	if list == nil {
 		var err error
-		if list, err = p.defaultTarget(extra.UserId, extra.ChannelId); err != nil {
+		if list, err = p.commandTarget(extra.UserId, extra.ChannelId); err != nil {
 			return false, err
 		}
 	}

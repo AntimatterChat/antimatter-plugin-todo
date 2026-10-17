@@ -617,21 +617,6 @@ func (p *Plugin) Targets(userID, channelID string) (*Targets, error) {
 	return targets, nil
 }
 
-// defaultTarget is the list a todo goes to when none is named (see Targets).
-func (p *Plugin) defaultTarget(userID, channelID string) (*TodoList, error) {
-	targets, err := p.Targets(userID, channelID)
-	if err != nil {
-		return nil, err
-	}
-	for _, info := range targets.Lists {
-		if info.ID == targets.DefaultID {
-			list := info.TodoList
-			return &list, nil
-		}
-	}
-	return p.ensurePersonal(userID)
-}
-
 func (p *Plugin) sendListChanged(list *TodoList) {
 	data := map[string]any{"list_id": list.ID, "channel_id": list.ChannelID}
 	if list.ChannelID != "" {

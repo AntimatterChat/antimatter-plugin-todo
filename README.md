@@ -31,7 +31,8 @@ assigns you a todo or sends you one, the Todo bot tells you, and its message let
 reminds you of the todos of your lists and the ones assigned to you.
 
 The `/todo` command works too: `/todo lists`, `/todo new <name>` (`--personal` for a list of your own),
-`/todo add <message>` or `/todo add <list>: <message>`, `/todo list [my|in|out]`, `/todo pop`,
+`/todo add <message>` (to **My todos**, or the personal list you last added to from the channel: never a shared
+list unless you name it) or `/todo add <list>: <message>`, `/todo list [my|in|out]`, `/todo pop`,
 `/todo send @someone <message>`, `/todo settings summary [on|off]` and
 `/todo settings allow_incoming_task_requests [on|off]`.
 

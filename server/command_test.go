@@ -175,8 +175,8 @@ func TestAddCommandChoosesTheList(t *testing.T) {
 	assert.Contains(t, answer, "Added to **Groceries**", "no list is named Note: the last list used from this channel")
 	assert.Equal(t, []string{"Oat milk", "Note: the room is booked"}, messages(t, p, groceries.ID), "with the whole text")
 
-	answer = run(t, p, bob, town, "/todo add Book the room")
-	assert.Contains(t, answer, "Added to **Launch** (shared with ~town-square)", "else the channel's first list")
+	answer = run(t, p, alice, town, "/todo add Launch: Book the room")
+	assert.Contains(t, answer, "Added to **Launch** (shared with ~town-square)", "a channel's list when named")
 	assert.Equal(t, []string{"Book the room"}, messages(t, p, launch.ID))
 
 	answer = run(t, p, bob, town, "/todo add Groceries: steal alice's list")
@@ -204,4 +204,25 @@ func TestListAndPopCommands(t *testing.T) {
 	answer = run(t, p, alice, town, "/todo pop")
 	assert.Equal(t, "There are no Todos to pop.", answer)
 	assert.Empty(t, api.replies)
+}
+
+// Privacy: without a list's name, "/todo add" never puts a todo in a list others see, even when the
+// channel has lists, or the last list used from the channel is one of them.
+func TestAddCommandWithoutAListStaysPersonal(t *testing.T) {
+	p, _ := newTestPlugin(t)
+	launch := newList(t, p, alice, town, "Launch")
+	_, err := p.AddItem(bob, launch.ID, itemRequest{Message: str("Shared on purpose"), ChannelID: town})
+	require.NoError(t, err)
+	targets, err := p.Targets(bob, town)
+	require.NoError(t, err)
+	require.Equal(t, launch.ID, targets.DefaultID, "the message's Add to todo still offers it, in its picker")
+
+	answer := run(t, p, bob, town, "/todo add Book a dentist")
+	assert.Contains(t, answer, "Added to **My todos** (only you can see it)")
+	assert.Equal(t, []string{"Shared on purpose"}, messages(t, p, launch.ID))
+	assert.Equal(t, []string{"Book a dentist"}, messages(t, p, defaultPersonalListID(bob)))
+
+	answer = run(t, p, carol, town, "/todo add Order the cake")
+	assert.Contains(t, answer, "Added to **My todos**", "not the channel's first list either")
+	assert.Equal(t, []string{"Shared on purpose"}, messages(t, p, launch.ID))
 }
