@@ -10,7 +10,6 @@ import type {Post} from '@mattermost/types/posts';
 import {mockFetch, renderWithHost} from '../tests/utils';
 
 import {dayOf, urgency} from './components/due';
-import TodoHeader from './components/todo_header';
 import TodoPanel from './components/todo_panel';
 import TodoPost from './components/todo_post';
 import {getState, openDraft, openList, resetState} from './state';
@@ -77,13 +76,7 @@ test('due dates: overdue, today, tomorrow, soon and later', () => {
 
 test('list of lists: the channel\'s lists with what is left to do and what is overdue, the archived ones folded', async () => {
     mockFetch([...base(), {path: '/api/v1/lists?scope=channel', body: [info('l1', 'Launch', {open_count: 3, earliest_due: yesterday}), info('l2', 'Retro', {archived_at: 5})]}]);
-    renderWithHost(
-        <>
-            <TodoHeader/>
-            <TodoPanel/>
-        </>,
-        {channel},
-    );
+    renderWithHost(<TodoPanel/>, {channel});
 
     expect(await screen.findByText('Launch')).toBeInTheDocument();
     expect(screen.getByText('Todo')).toBeInTheDocument();
@@ -127,13 +120,7 @@ test('open list: back, its name, where it is, the star and its menu; a todo chec
         {path: '/api/v1/lists/l1', body: {...launch, items: [item('t1', 'Order the bulbs', {assignee_id: 'bob', due: yesterday}), item('t2', 'Ship rc3', {done_at: 5, done_by: 'bob'})]}},
         {method: 'PATCH', path: '/api/v1/lists/l1/items/t1', body: item('t1', 'Order the bulbs', {done_at: 9})},
     ]);
-    renderWithHost(
-        <>
-            <TodoHeader/>
-            <TodoPanel/>
-        </>,
-        {channel},
-    );
+    renderWithHost(<TodoPanel/>, {channel});
 
     fireEvent.click(await screen.findByText('Launch'));
     expect(await screen.findByText('Order the bulbs')).toBeInTheDocument();
@@ -194,13 +181,7 @@ test('makes a list from the + of the tab\'s header row, in the scope of the tab'
         {method: 'POST', path: '/api/v1/lists', body: {...launch, items: []}, status: 201},
         {path: '/api/v1/lists/l1', body: {...launch, items: []}},
     ]);
-    renderWithHost(
-        <>
-            <TodoHeader/>
-            <TodoPanel/>
-        </>,
-        {channel},
-    );
+    renderWithHost(<TodoPanel/>, {channel});
 
     fireEvent.click(await screen.findByRole('button', {name: 'New list in this channel'}));
     fireEvent.change(screen.getByPlaceholderText('Name of the new list'), {target: {value: ' Launch '}});
@@ -223,13 +204,7 @@ test('makes a list from the + of the tab\'s header row, in the scope of the tab'
 
 test('the favorites have no + : a list is made in a channel or in mine', async () => {
     mockFetch([...base(), {path: '/api/v1/lists?scope=favorites', body: []}]);
-    renderWithHost(
-        <>
-            <TodoHeader/>
-            <TodoPanel/>
-        </>,
-        {channel},
-    );
+    renderWithHost(<TodoPanel/>, {channel});
     fireEvent.click(await screen.findByRole('tab', {name: 'Favourites'}));
     expect(await screen.findByText('Star a list to find it here, wherever it is.')).toBeInTheDocument();
     expect(screen.queryByRole('button', {name: 'New list in this channel'})).not.toBeInTheDocument();

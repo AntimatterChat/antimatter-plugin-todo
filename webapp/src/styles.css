@@ -9,7 +9,7 @@
  * in Fusion's layer.
  */
 
-.amt-panel, .amt-post, .amt-picker, .amt-menu, .amt-icons, .amt-head, .amt-bar {
+.amt-panel, .amt-post, .amt-picker, .amt-menu, .amt-icons, .amt-bar {
     --amt-fg: var(--am-text, var(--center-channel-color));
     --amt-fg-2: var(--am-text-2, rgba(var(--center-channel-color-rgb), 0.8));
     --amt-muted: var(--am-muted, rgba(var(--center-channel-color-rgb), 0.64));
@@ -30,9 +30,9 @@
     --amt-app: #34D399;
     --am-cc: var(--amt-app);
 }
-:root[data-am-theme="light"] :is(.amt-panel, .amt-post, .amt-picker, .amt-menu, .amt-icons, .amt-head, .amt-bar) { --amt-app: #059669; }
+:root[data-am-theme="light"] :is(.amt-panel, .amt-post, .amt-picker, .amt-menu, .amt-icons, .amt-bar) { --amt-app: #059669; }
 @media (prefers-color-scheme: light) {
-    :root[data-am-theme="system"] :is(.amt-panel, .amt-post, .amt-picker, .amt-menu, .amt-icons, .amt-head, .amt-bar) { --amt-app: #059669; }
+    :root[data-am-theme="system"] :is(.amt-panel, .amt-post, .amt-picker, .amt-menu, .amt-icons, .amt-bar) { --amt-app: #059669; }
 }
 
 /* The panel fills the right-hand slot, and scrolls */
@@ -68,19 +68,12 @@
 .amt-muted { color: var(--amt-muted); }
 .amt-error { padding: 7px 10px; border-radius: 8px; background: color-mix(in srgb, var(--amt-danger) 12%, transparent); color: var(--amt-danger); font-size: 13px; }
 
-/* The panel's header: "Todo" over the lists (whose + is in the tab's header row); back, the list's
-   tile, name, scope, star and actions over an open list. */
-.amt-head { flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; color: var(--amt-fg); }
-.amt-head button { border: 0; background: none; color: inherit; cursor: pointer; }
-.amt-head-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.amt-head-slot { display: flex; align-items: center; gap: 2px; min-width: 0; }
-.amt-head-open .amt-head-slot { flex: 1; }
-.amt-bar { display: flex; align-items: center; gap: 6px; margin: -10px -12px 0; padding: 6px 8px; border-bottom: 1px solid var(--amt-line); }
-/* Over an open list, its back button (a chevron and the app's icon) takes the place of the panel's app icon. */
-:is(.am-app, .am-layer) .am-rhs-classic:has(.amt-head-open) .am-rhs-app-ic { display: none; }
-:is(.am-app, .am-layer) .am-rhs-classic:has(.amt-head-open):has(.am-rhs-app-ic) .sidebar--right__title { padding-left: 0; }
-.amt-icon-btn.amt-back { flex: none; width: auto; height: 32px; margin-left: -6px; padding: 0 4px 0 2px; display: flex; align-items: center; gap: 0; }
-.amt-back .am-ic:last-child, .amt-back .icon:last-child { width: 18px; height: 18px; color: var(--amt-app); }
+/* An open list's toolbar (TodoToolbar), at the top of the panel under the host's header: back, the
+   list's tile, name, scope, star and actions. The lists have none: their tabs and the tab's header
+   row, with the +, top them. */
+.amt-bar { flex: none; display: flex; align-items: center; gap: 4px; min-height: 44px; margin: -10px -12px 0; padding: 6px 8px; border-bottom: 1px solid var(--amt-line); color: var(--amt-fg); }
+.amt-bar button { border: 0; background: none; color: inherit; cursor: pointer; }
+.amt-icon-btn.amt-back { flex: none; width: 32px; height: 32px; display: grid; place-items: center; }
 .am-ic.am-ic-back { transform: rotate(90deg); }
 .amt-title { flex: 1; min-width: 0; height: 32px; padding: 0 8px; border: 1px solid transparent; border-radius: 7px; background: none; color: var(--amt-fg); font: 600 15px var(--am-font-display, inherit); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; outline: none; }
 .amt-title-static { display: flex; align-items: center; }
@@ -223,7 +216,7 @@ input.amt-title:focus { border-color: var(--amt-accent); background: var(--amt-b
 
 /* Phones: the header keeps its buttons, rows and forms wrap */
 @media (max-width: 480px) {
-    .amt-head .amt-scope-compact { display: none; }
+    .amt-bar .amt-scope-compact { display: none; }
     .amt-title { font-size: 14px; padding: 0 4px; }
     .amt-add-row { flex-wrap: wrap; }
     .amt-add-row input { flex-basis: 100%; }
