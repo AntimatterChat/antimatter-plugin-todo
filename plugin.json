@@ -4,7 +4,7 @@
     "description": "Todo lists: shared lists in channels and conversations, your own lists, and todos you send each other.",
     "homepage_url": "https://github.com/antimatterchat/antimatter-plugin-todo",
     "support_url": "https://github.com/antimatterchat/antimatter-plugin-todo/issues",
-    "version": "0.8.0",
+    "version": "0.9.0",
     "icon_path": "assets/icon.svg",
     "min_server_version": "12.0.0",
     "server": {
