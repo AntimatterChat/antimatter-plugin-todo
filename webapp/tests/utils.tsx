@@ -7,24 +7,29 @@ import {IntlProvider} from 'react-intl';
 import {Provider} from 'react-redux';
 import {applyMiddleware, createStore} from 'redux';
 
+import type {Channel} from '@mattermost/types/channels';
+
 const profiles = {
     me: {id: 'me', username: 'maya', first_name: 'Maya', last_name: 'Chen'},
     bob: {id: 'bob', username: 'bob', first_name: 'Bob', last_name: 'Ross'},
 };
 
-const state = {
-    entities: {
-        general: {config: {TeammateNameDisplay: 'full_name'}, license: {}},
-        users: {currentUserId: 'me', profiles},
-        teams: {currentTeamId: 'team1', teams: {team1: {id: 'team1', name: 'lumen'}}},
-        channels: {currentChannelId: '', channels: {}},
-        preferences: {myPreferences: {}},
-    },
-};
+function hostState(channel?: Channel) {
+    return {
+        entities: {
+            general: {config: {TeammateNameDisplay: 'full_name'}, license: {}},
+            users: {currentUserId: 'me', profiles},
+            teams: {currentTeamId: 'team1', teams: {team1: {id: 'team1', name: 'lumen'}}},
+            channels: {currentChannelId: channel?.id || '', channels: channel ? {[channel.id]: channel} : {}},
+            preferences: {myPreferences: {}},
+        },
+    };
+}
 
-// A store like the host's: its state, and thunks run (and ignored).
-export function renderWithHost(ui: React.ReactElement) {
+// A store like the host's: its state (in a channel, when given), and thunks run (and ignored).
+export function renderWithHost(ui: React.ReactElement, {channel}: {channel?: Channel} = {}) {
     const thunk = () => (next: (a: unknown) => unknown) => (action: unknown) => (typeof action === 'function' ? Promise.resolve({data: true}) : next(action));
+    const state = hostState(channel);
     const store = createStore((s = state) => s, applyMiddleware(thunk));
     return render(
         <Provider store={store}>

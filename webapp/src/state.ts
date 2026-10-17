@@ -4,12 +4,13 @@
 import {useEffect, useSyncExternalStore} from 'react';
 
 import * as client from './client';
-import type {AssignedTodo, ChannelList, Lists} from './types/todo';
+import type {IndexKey} from './client';
+import type {AssignedTodo, ListDetail, ListInfo, Lists} from './types/todo';
 
-// A small store of the todos: the user's own lists, the channel todos assigned to them, and the
-// lists of the channels they looked at, refreshed by the plugin's websocket events.
+// A small store of the app: the lists of the tabs, the open list, the todos sent between people
+// and those assigned to the user, refreshed by the plugin's websocket events.
 
-type Personal = {lists?: Lists; assigned?: AssignedTodo[]; error?: string};
+type Requests = {lists?: Lists; assigned?: AssignedTodo[]; error?: string};
 
 // A todo started from a message's "Add to todo" (see index.tsx), for the panel's form.
 export type Draft = {
@@ -19,17 +20,35 @@ export type Draft = {
     postPermalink: string;
 };
 
-export type View = 'channel' | 'following' | 'mine';
+export type View = 'channel' | 'favorites' | 'mine';
+
+type Index = {lists?: ListInfo[]; error?: string};
+type Detail = {list?: ListDetail; error?: string; status?: number};
 
 type State = {
-    personal: Personal;
-    channels: Record<string, {list?: ChannelList; error?: string}>;
     view: View;
+    openListId: string | null;
     draft: Draft | null;
+    requests: Requests;
+    indexes: Partial<Record<IndexKey, Index>>;
+    details: Record<string, Detail>;
 };
 
-let state: State = {personal: {}, channels: {}, view: 'channel', draft: null};
+const initial = (): State => ({view: 'channel', openListId: null, draft: null, requests: {}, indexes: {}, details: {}});
+
+let state: State = initial();
 const listeners = new Set<() => void>();
+
+// The channel the panel was closed in: opened again in another channel, it shows that channel's
+// lists, not the list left open.
+let closedIn: string | null = null;
+
+// The panel is shown by the host (see index.tsx).
+let showPanel: () => void = () => null;
+
+// The app draws its header in the panel's header (TodoHeader, the title it gives the host): the row
+// where the list of lists and the open list put their title and actions, while it's shown.
+let headSlot: HTMLElement | null = null;
 
 function set(change: Partial<State>) {
     state = {...state, ...change};
@@ -53,60 +72,110 @@ export function getState() {
 
 // For tests.
 export function resetState() {
-    state = {personal: {}, channels: {}, view: 'channel', draft: null};
+    state = initial();
+    closedIn = null;
+    headSlot = null;
     listeners.forEach((l) => l());
 }
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
 
-export async function refreshPersonal(reminder = false) {
+// Requests and assignments ------------------------------------------------------------------------
+
+export async function refreshRequests(reminder = false) {
     try {
-        const [lists, assigned] = await Promise.all([client.getLists(reminder), client.getAssigned()]);
-        set({personal: {lists: lists || {my: [], in: [], out: []}, assigned: assigned || []}});
+        const [lists, assigned] = await Promise.all([client.getRequests(reminder), client.getAssigned()]);
+        set({requests: {lists: lists || {my: [], in: [], out: []}, assigned: assigned || []}});
     } catch (err) {
-        set({personal: {...state.personal, error: message(err)}});
+        set({requests: {...state.requests, error: message(err)}});
     }
 }
 
-export async function refreshChannel(channelId: string) {
-    try {
-        const list = await client.getChannelTodos(channelId);
-        set({channels: {...state.channels, [channelId]: {list}}});
-    } catch (err) {
-        set({channels: {...state.channels, [channelId]: {...state.channels[channelId], error: message(err)}}});
-    }
-}
-
-// refreshLoadedChannel refreshes a channel's list if the user looked at it (websocket events).
-export function refreshLoadedChannel(channelId: string) {
-    if (state.channels[channelId]) {
-        refreshChannel(channelId);
-    }
-}
-
-export function useChannelList(channelId?: string) {
-    const entry = useTodoState((s) => (channelId ? s.channels[channelId] : null));
+export function useRequests() {
+    const requests = useTodoState((s) => s.requests);
+    const loaded = Boolean(requests.lists);
     useEffect(() => {
-        if (channelId) {
-            refreshChannel(channelId);
+        if (!loaded) {
+            refreshRequests();
         }
-    }, [channelId]);
+    }, [loaded]);
+    return requests;
+}
+
+// Lists -------------------------------------------------------------------------------------------
+
+export const channelKey = (channelId: string): IndexKey => `channel:${channelId}`;
+
+export async function refreshIndex(key: IndexKey) {
+    try {
+        const lists = await client.listLists(key);
+        set({indexes: {...state.indexes, [key]: {lists: lists || []}}});
+    } catch (err) {
+        set({indexes: {...state.indexes, [key]: {...state.indexes[key], error: message(err)}}});
+    }
+}
+
+// useIndex returns the lists of a tab, loading them when shown.
+export function useIndex(key: IndexKey | null) {
+    const entry = useTodoState((s) => (key ? s.indexes[key] : undefined));
+    useEffect(() => {
+        if (key) {
+            refreshIndex(key);
+        }
+    }, [key]);
     return entry;
 }
 
-export function usePersonal() {
-    const personal = useTodoState((s) => s.personal);
-    const loaded = Boolean(personal.lists);
-    useEffect(() => {
-        if (!loaded) {
-            refreshPersonal();
-        }
-    }, [loaded]);
-    return personal;
+export async function refreshList(listId: string) {
+    try {
+        const list = await client.getList(listId);
+        set({details: {...state.details, [listId]: {list}}});
+    } catch (err) {
+        const status = (err as client.ClientError).status;
+        set({details: {...state.details, [listId]: {...state.details[listId], error: message(err), status}}});
+    }
 }
 
-// The channel the panel was closed in: opened again in another channel, it shows that channel's list.
-let closedIn: string | null = null;
+export function useListDetail(listId: string) {
+    const entry = useTodoState((s) => s.details[listId]);
+    useEffect(() => {
+        refreshList(listId);
+    }, [listId]);
+    return entry;
+}
+
+// refreshAfterChange refreshes what shows a list that changed: the list if it's loaded, and the
+// tabs it may be in.
+export function refreshAfterChange(listId: string, channelId?: string) {
+    if (state.details[listId]) {
+        refreshList(listId);
+    }
+    const keys: IndexKey[] = [channelId ? channelKey(channelId) : 'mine', 'favorites'];
+    for (const key of keys) {
+        if (state.indexes[key]) {
+            refreshIndex(key);
+        }
+    }
+}
+
+// The panel ---------------------------------------------------------------------------------------
+
+export function setView(view: View) {
+    set({view, openListId: null});
+}
+
+export function openList(listId: string) {
+    closedIn = null;
+    set({openListId: listId});
+}
+
+export function closeList() {
+    set({openListId: null});
+}
+
+export function setDraft(draft: Draft | null) {
+    set({draft});
+}
 
 export function panelClosed(channelId: string) {
     closedIn = channelId;
@@ -114,28 +183,37 @@ export function panelClosed(channelId: string) {
 
 export function panelOpened(channelId: string) {
     if (closedIn !== null && closedIn !== channelId) {
-        state = {...state, view: 'channel'};
+        state = {...state, view: 'channel', openListId: null};
     }
     closedIn = null;
 }
-
-export function setView(view: View) {
-    set({view});
-}
-
-export function setDraft(draft: Draft | null) {
-    set({draft});
-}
-
-// The panel is shown by the host (see index.tsx).
-let showPanel: () => void = () => null;
 
 export function setShowPanel(show: () => void) {
     showPanel = show;
 }
 
-// openDraft shows the panel with a todo started from a message, in the view of its channel.
+// openDraft shows the panel with a todo started from a message, to add to a list.
 export function openDraft(draft: Draft) {
-    set({draft, view: 'channel'});
+    closedIn = null;
+    set({draft});
     showPanel();
+}
+
+export function setHeadSlot(element: HTMLElement) {
+    if (headSlot !== element) {
+        headSlot = element;
+        listeners.forEach((l) => l());
+    }
+}
+
+// clearHeadSlot forgets the header's row as it goes away, unless another took its place.
+export function clearHeadSlot(element: HTMLElement) {
+    if (headSlot === element) {
+        headSlot = null;
+        listeners.forEach((l) => l());
+    }
+}
+
+export function useHeadSlot() {
+    return useSyncExternalStore(subscribe, () => headSlot);
 }

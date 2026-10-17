@@ -8,11 +8,12 @@ import {Client4} from 'mattermost-redux/client';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 
+import TodoHeader from './components/todo_header';
 import TodoPanel from './components/todo_panel';
 import TodoPost from './components/todo_post';
 import manifest from './manifest';
 import {messages} from './messages';
-import {openDraft, refreshLoadedChannel, refreshPersonal, setShowPanel} from './state';
+import {openDraft, refreshAfterChange, refreshIndex, refreshRequests, setShowPanel} from './state';
 import type {PluginClass, PluginRegistry, PluginStore, RightHandSidebarRegistration} from './types/host';
 import Icon from './ui/icon';
 import {registerTranslations} from './translations';
@@ -30,6 +31,10 @@ const REMINDER_IDLE = 60 * 60 * 1000;
 
 const title = <FormattedMessage {...messages.app}/>;
 
+// The panel's header shows the app's own: "Todo" and the + over the lists, back and the list's
+// name and actions over an open list.
+const header = <TodoHeader/>;
+
 export default class Plugin implements PluginClass {
     private onActivity?: () => void;
 
@@ -42,11 +47,11 @@ export default class Plugin implements PluginClass {
 
         // The app bar opens the todo panel; hosts without it get a channel header button.
         let rhs: RightHandSidebarRegistration;
-        const appBar = registry.registerAppBarComponent?.({iconUrl: appBarIcon, tooltipText: <FormattedMessage {...messages.appTooltip}/>, rhsComponent: TodoPanel, rhsTitle: title});
+        const appBar = registry.registerAppBarComponent?.({iconUrl: appBarIcon, tooltipText: <FormattedMessage {...messages.appTooltip}/>, rhsComponent: TodoPanel, rhsTitle: header});
         if (appBar && typeof appBar === 'object') {
             rhs = appBar.rhsComponent;
         } else {
-            rhs = registry.registerRightHandSidebarComponent(TodoPanel, title);
+            rhs = registry.registerRightHandSidebarComponent(TodoPanel, header);
         }
         registry.registerChannelHeaderButtonAction(
             <Icon name='checkbox'/>,
@@ -56,7 +61,7 @@ export default class Plugin implements PluginClass {
         );
         setShowPanel(() => store.dispatch(rhs.showRHSPlugin));
 
-        // A message's "Add to todo" starts a todo with its text, linked to it.
+        // A message's "Add to todo" starts a todo with its text, linked to it, and asks which list.
         registry.registerPostDropdownMenuAction(
             <FormattedMessage {...messages.addFromMessage}/>,
             (postId) => {
@@ -78,22 +83,26 @@ export default class Plugin implements PluginClass {
 
         registry.registerPostTypeComponent('custom_todo', TodoPost);
 
-        registry.registerWebSocketEventHandler(`custom_${manifest.id}_refresh`, () => refreshPersonal());
-        registry.registerWebSocketEventHandler(`custom_${manifest.id}_channel_refresh`, (msg) => {
-            if (typeof msg.data.channel_id === 'string') {
-                refreshLoadedChannel(msg.data.channel_id);
+        // The todos sent between people and the assignments changed; a list (or its todos) changed.
+        registry.registerWebSocketEventHandler(`custom_${manifest.id}_refresh`, () => refreshRequests());
+        registry.registerWebSocketEventHandler(`custom_${manifest.id}_list_changed`, (msg) => {
+            if (typeof msg.data.list_id === 'string') {
+                refreshAfterChange(msg.data.list_id, typeof msg.data.channel_id === 'string' ? msg.data.channel_id : undefined);
             }
         });
-        registry.registerReconnectHandler(() => refreshPersonal());
+        registry.registerReconnectHandler(() => {
+            refreshRequests();
+            refreshIndex('mine');
+        });
 
         // The server sends the daily reminder when the lists are loaded for it: now, and when the
         // user comes back after an hour away.
-        refreshPersonal(true);
+        refreshRequests(true);
         let last = Date.now();
         this.onActivity = () => {
             const now = Date.now();
             if (now - last > REMINDER_IDLE) {
-                refreshPersonal(true);
+                refreshRequests(true);
             }
             last = now;
         };

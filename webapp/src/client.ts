@@ -4,7 +4,7 @@
 import {Client4} from 'mattermost-redux/client';
 
 import manifest from './manifest';
-import type {AssignedTodo, ChannelList, ChannelTodo, ChannelTodoPatch, FollowedList, Lists} from './types/todo';
+import type {AssignedTodo, Item, ItemPatch, ListDetail, ListInfo, ListPatch, Lists, Targets} from './types/todo';
 
 export class ClientError extends Error {
     status: number;
@@ -37,62 +37,56 @@ async function request<T>(method: string, path: string, body?: unknown, headers?
     return (text ? JSON.parse(text) : null) as T;
 }
 
-// Personal lists ----------------------------------------------------------------------------------
+// Todos sent between people ---------------------------------------------------------------------
 
-// getLists returns the user's lists; with reminder, the server also sends the daily reminder when
-// one is due (in the user's time zone).
-export function getLists(reminder = false) {
+// getRequests returns the todos sent to and by the user; with reminder, the server also sends the
+// daily reminder when one is due (in the user's time zone).
+export function getRequests(reminder = false) {
     return request<Lists>('GET', '/lists' + (reminder ? '?reminder=true' : ''), null, {'X-Timezone-Offset': String(new Date().getTimezoneOffset())});
-}
-
-export type AddPersonal = {
-    message: string;
-    description?: string;
-
-    // A username to send the todo to, else the todo is the user's own.
-    send_to?: string;
-    post_id?: string;
-    postPermalink?: string;
-};
-
-export function addPersonal(todo: AddPersonal) {
-    return request('POST', '/add', todo);
 }
 
 export const complete = (id: string) => request('POST', '/complete', {id});
 export const remove = (id: string) => request('POST', '/remove', {id});
-export const accept = (id: string) => request('POST', '/accept', {id});
+
+// accept moves a todo sent to the user into one of their lists: their default one, unless listId.
+export const accept = (id: string, listId?: string) => request('POST', '/accept', listId ? {id, list_id: listId} : {id});
 export const bump = (id: string) => request('POST', '/bump', {id});
-export const edit = (id: string, message: string, description: string) => request('PUT', '/edit', {id, message, description});
-export const sendTo = (id: string, username: string) => request('POST', '/change_assignment', {id, send_to: username});
 
-// Channel lists -----------------------------------------------------------------------------------
-
-export function getChannelTodos(channelId: string) {
-    return request<ChannelList>('GET', `/api/v1/channels/${channelId}/todos`);
+// sendNew sends a new todo to someone (by username), from a message when postId is given.
+export function sendNew(todo: {message: string; description?: string; username: string; postId?: string}) {
+    return request('POST', '/add', {message: todo.message, description: todo.description, send_to: todo.username, post_id: todo.postId});
 }
 
-export function addChannelTodo(channelId: string, todo: ChannelTodoPatch) {
-    return request<ChannelTodo>('POST', `/api/v1/channels/${channelId}/todos`, todo);
+// Lists ---------------------------------------------------------------------------------------------
+
+// The lists of a tab: the user's own, their favorites, or a channel's.
+export type IndexKey = 'mine' | 'favorites' | `channel:${string}`;
+
+export function listLists(key: IndexKey) {
+    if (key.startsWith('channel:')) {
+        return request<ListInfo[]>('GET', `/api/v1/lists?scope=channel&channel_id=${key.slice('channel:'.length)}`);
+    }
+    return request<ListInfo[]>('GET', `/api/v1/lists?scope=${key}`);
 }
 
-export function updateChannelTodo(channelId: string, id: string, patch: ChannelTodoPatch) {
-    return request<ChannelTodo>('PATCH', `/api/v1/channels/${channelId}/todos/${id}`, patch);
+// createList makes a list of a channel, or a personal one without channelId.
+export function createList(name: string, channelId?: string, icon?: string) {
+    return request<ListDetail>('POST', '/api/v1/lists', {name, channel_id: channelId || '', icon: icon || ''});
 }
 
-export function deleteChannelTodo(channelId: string, id: string) {
-    return request('DELETE', `/api/v1/channels/${channelId}/todos/${id}`);
-}
+export const getList = (id: string) => request<ListDetail>('GET', `/api/v1/lists/${id}`);
+export const updateList = (id: string, patch: ListPatch) => request<ListDetail>('PATCH', `/api/v1/lists/${id}`, patch);
+export const deleteList = (id: string) => request('DELETE', `/api/v1/lists/${id}`);
+export const setFavorite = (id: string, favorite: boolean) => request(favorite ? 'PUT' : 'DELETE', `/api/v1/lists/${id}/favorite`);
 
-export function getAssigned() {
-    return request<AssignedTodo[]>('GET', '/api/v1/assigned');
-}
+export const addItem = (listId: string, item: ItemPatch) => request<Item>('POST', `/api/v1/lists/${listId}/items`, item);
+export const updateItem = (listId: string, id: string, patch: ItemPatch) => request<Item>('PATCH', `/api/v1/lists/${listId}/items/${id}`, patch);
+export const deleteItem = (listId: string, id: string) => request('DELETE', `/api/v1/lists/${listId}/items/${id}`);
 
-// getFollowing gives the lists of the channels the user follows.
-export function getFollowing() {
-    return request<FollowedList[]>('GET', '/api/v1/following');
-}
+// sendItem sends a todo of a personal list to someone: it leaves the list.
+export const sendItem = (listId: string, id: string, username: string) => request('POST', `/api/v1/lists/${listId}/items/${id}/send`, {username});
 
-export function setFollowing(channelId: string, follow: boolean) {
-    return request(follow ? 'PUT' : 'DELETE', `/api/v1/channels/${channelId}/follow`);
-}
+// getTargets returns the lists the user can add a todo to from a channel, and the one to offer.
+export const getTargets = (channelId: string) => request<Targets>('GET', `/api/v1/targets?channel_id=${channelId}`);
+
+export const getAssigned = () => request<AssignedTodo[]>('GET', '/api/v1/assigned');

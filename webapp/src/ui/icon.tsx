@@ -22,7 +22,20 @@ const classicIcons = {
     'pin-top': 'arrow-collapse-up',
     bell: 'bell-outline',
     chev: 'chevron-down',
+    back: 'chevron-left',
+    lock: 'lock-outline',
+    users: 'account-multiple-outline',
+    calendar: 'calendar-outline',
+    smile: 'emoticon-happy-outline',
+    archive: 'archive-outline',
 } as const;
+
+// The names of Fusion's sprite for the plugin's icons, where they differ: the back chevron is the
+// sprite's chevron, turned (styles.css), and archiving its folder.
+const fusionIcons: Partial<Record<keyof typeof classicIcons, string>> = {
+    back: 'chev',
+    archive: 'folder',
+};
 
 export type IconName = keyof typeof classicIcons;
 
@@ -35,10 +48,10 @@ export default function Icon({name, size}: Props) {
     if (isFusionUI()) {
         return (
             <svg
-                className={cx('ic', size)}
+                className={cx('ic', size, name === 'back' && 'ic-back') + ' amt-ic-' + name}
                 aria-hidden='true'
             >
-                <use href={`#am-i-${name}`}/>
+                <use href={`#am-i-${fusionIcons[name] || name}`}/>
             </svg>
         );
     }

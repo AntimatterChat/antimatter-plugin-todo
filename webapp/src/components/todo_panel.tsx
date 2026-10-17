@@ -2,78 +2,46 @@
 // See LICENSE for license information.
 
 import React, {useEffect, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
 import {useSelector} from 'react-redux';
 
 import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 
-import {messages} from '../messages';
-import {panelClosed, panelOpened, setView, useTodoState} from '../state';
-import {cx} from '../ui/web_ui';
+import {panelClosed, panelOpened, useTodoState} from '../state';
 
-import ChannelView from './channel_view';
-import FollowingView from './following_view';
-import MineView from './mine_view';
+import DraftView from './draft_view';
+import ListIndex from './list_index';
+import ListView from './list_view';
 
-// TodoPanel is the todo app of the right-hand panel: the current channel's shared list, or the
-// user's own lists.
+// TodoPanel is the todo app of the right-hand panel: the lists (of the current channel, the
+// favorites, the user's own), an open list, or a todo started from a message.
 export default function TodoPanel() {
-    const intl = useIntl();
     const channel = useSelector(getCurrentChannel);
 
-    // Back in another channel than the one it was closed in, the panel opens on that channel's list
+    // Back in another channel than the one it was closed in, the panel opens on that channel's lists
     useState(() => panelOpened(channel?.id || ''));
     const channelId = useRef(channel?.id || '');
     channelId.current = channel?.id || '';
     useEffect(() => () => panelClosed(channelId.current), []);
 
-    const view = useTodoState((s) => s.view);
-    const mineCount = useTodoState((s) => (s.personal.lists?.my.length || 0) + (s.personal.assigned?.length || 0) + (s.personal.lists?.in.length || 0));
-    const conversation = channel?.type === 'D' || channel?.type === 'G';
+    const draft = useTodoState((s) => s.draft);
+    const openListId = useTodoState((s) => s.openListId);
 
     return (
-        <div className={cx('app-panel') + ' amt-panel'}>
-            <div
-                className={cx('seg') + ' amt-seg'}
-                role='tablist'
-            >
-                <button
-                    type='button'
-                    role='tab'
-                    aria-selected={view === 'channel'}
-                    className={view === 'channel' ? cx('on') : ''}
-                    onClick={() => setView('channel')}
-                >
-                    {intl.formatMessage(conversation ? messages.viewConversation : messages.viewChannel)}
-                </button>
-                <button
-                    type='button'
-                    role='tab'
-                    aria-selected={view === 'following'}
-                    className={view === 'following' ? cx('on') : ''}
-                    onClick={() => setView('following')}
-                >
-                    {intl.formatMessage(messages.viewFollowing)}
-                </button>
-                <button
-                    type='button'
-                    role='tab'
-                    aria-selected={view === 'mine'}
-                    className={view === 'mine' ? cx('on') : ''}
-                    onClick={() => setView('mine')}
-                >
-                    {intl.formatMessage(messages.viewMine)}
-                    {mineCount > 0 && <span className='amt-count'>{mineCount}</span>}
-                </button>
-            </div>
-            {view === 'channel' && (
-                <ChannelView
-                    key={channel?.id}
+        <div className='amt-root'>
+            {draft && (
+                <DraftView
+                    key={draft.postId}
+                    draft={draft}
+                />
+            )}
+            {!draft && openListId && (
+                <ListView
+                    key={openListId}
+                    listId={openListId}
                     channel={channel}
                 />
             )}
-            {view === 'following' && <FollowingView/>}
-            {view === 'mine' && <MineView/>}
+            {!draft && !openListId && <ListIndex channel={channel}/>}
         </div>
     );
 }

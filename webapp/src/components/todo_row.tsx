@@ -1,11 +1,16 @@
 // Copyright (c) 2026-present Antimatter contributors.
 // See LICENSE for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {messages} from '../messages';
-import Icon, {type IconName} from '../ui/icon';
+import Icon from '../ui/icon';
+
+import {DueMark} from './due';
+import Menu, {type Action} from './menu';
+
+export type {Action} from './menu';
 
 // Text renders a todo's text as a message's Markdown, when the host offers its formatter.
 export function Text({text}: {text: string}) {
@@ -16,23 +21,19 @@ export function Text({text}: {text: string}) {
     return <>{text}</>;
 }
 
-export type Action = {
-    label: string;
-    icon: IconName;
-    onClick: () => void;
-    danger?: boolean;
-};
-
 type Props = {
     message: string;
     description?: string;
     done?: boolean;
 
+    // The day it's due, if any.
+    due?: string;
+
     // The checkbox: absent for todos that can't be checked off from here.
     onToggle?: (() => void) | null;
     meta?: React.ReactNode;
 
-    // A todo of a channel's list (shared), not of someone's own lists: marked in the app's colour.
+    // A todo of a shared list (a channel's), not of someone's own lists: marked in the app's colour.
     shared?: boolean;
     permalink?: string;
 
@@ -45,60 +46,9 @@ type Props = {
     editing?: boolean;
     onEditingChange?: (editing: boolean) => void;
 
-    // A person picker, open under the row.
+    // A person picker or a date field, open under the row.
     picker?: React.ReactNode;
 };
-
-function Menu({actions, onClose}: {actions: Action[]; onClose: () => void}) {
-    const ref = useRef<HTMLDivElement>(null);
-    useEffect(() => {
-        const onDown = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) {
-                onClose();
-            }
-        };
-
-        // Escape closes the menu only, not the panel it's in.
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                e.stopPropagation();
-                onClose();
-            }
-        };
-        document.addEventListener('mousedown', onDown);
-        document.addEventListener('keydown', onKey, true);
-        return () => {
-            document.removeEventListener('mousedown', onDown);
-            document.removeEventListener('keydown', onKey, true);
-        };
-    }, [onClose]);
-    return (
-        <div
-            ref={ref}
-            className='amt-menu'
-            role='menu'
-        >
-            {actions.map((a) => (
-                <button
-                    key={a.label}
-                    type='button'
-                    role='menuitem'
-                    className={a.danger ? 'amt-danger' : ''}
-                    onClick={() => {
-                        onClose();
-                        a.onClick();
-                    }}
-                >
-                    <Icon
-                        name={a.icon}
-                        size='sm'
-                    />
-                    {a.label}
-                </button>
-            ))}
-        </div>
-    );
-}
 
 function EditForm({message, description, onSave, onCancel}: {message: string; description: string; onSave: (m: string, d: string) => Promise<void>; onCancel: () => void}) {
     const intl = useIntl();
@@ -164,11 +114,10 @@ function EditForm({message, description, onSave, onCancel}: {message: string; de
     );
 }
 
-// TodoRow is a todo in a list: its checkbox, text, details and the people and place it's about,
-// with its actions in a menu.
-export default function TodoRow({message, description, done, onToggle, meta, shared, permalink, buttons, actions, onSave, editing, onEditingChange, picker}: Props) {
+// TodoRow is a todo in a list: its checkbox, text, details, when it's due and the people and place
+// it's about, with its actions in a menu.
+export default function TodoRow({message, description, done, due, onToggle, meta, shared, permalink, buttons, actions, onSave, editing, onEditingChange, picker}: Props) {
     const intl = useIntl();
-    const [menu, setMenu] = useState(false);
 
     if (editing && onSave) {
         return (
@@ -183,6 +132,7 @@ export default function TodoRow({message, description, done, onToggle, meta, sha
         );
     }
 
+    const showDue = Boolean(due && !done);
     return (
         <div className={'amt-row' + (done ? ' amt-done' : '') + (shared ? ' amt-shared' : '')}>
             {onToggle ? (
@@ -206,8 +156,9 @@ export default function TodoRow({message, description, done, onToggle, meta, sha
             <div className='amt-body'>
                 <div className='amt-text'><Text text={message}/></div>
                 {description && <div className='amt-desc'><Text text={description}/></div>}
-                {(meta || permalink) && (
+                {(meta || permalink || showDue) && (
                     <div className='amt-meta'>
+                        {showDue && <DueMark due={due}/>}
                         {meta}
                         {permalink && (
                             <a
@@ -247,26 +198,11 @@ export default function TodoRow({message, description, done, onToggle, meta, sha
             </div>
             {actions && actions.length > 0 && (
                 <div className='amt-row-menu'>
-                    <button
-                        type='button'
-                        className='amt-icon-btn'
-                        aria-label={intl.formatMessage(messages.more)}
-                        title={intl.formatMessage(messages.more)}
-                        aria-haspopup='menu'
-                        aria-expanded={menu}
-                        onClick={() => setMenu((m) => !m)}
-                    >
-                        <Icon
-                            name='dots'
-                            size='sm'
-                        />
-                    </button>
-                    {menu && (
-                        <Menu
-                            actions={actions}
-                            onClose={() => setMenu(false)}
-                        />
-                    )}
+                    <Menu
+                        label={intl.formatMessage(messages.more)}
+                        actions={actions}
+                        small={true}
+                    />
                 </div>
             )}
         </div>

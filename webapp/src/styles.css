@@ -2,37 +2,112 @@
  * Copyright (c) 2026-present Antimatter contributors.
  * See LICENSE for license information.
  *
- * Under Fusion, the panel uses Fusion's app panel classes (am-app-panel, am-app-h, am-seg...); under
- * the classic UI, their amt- equivalents below. The todo rows, forms and menus are the plugin's own,
- * in either UI's colors.
+ * Under Fusion, the panel uses Fusion's app panel classes (am-app-panel, am-app-h, am-app-row,
+ * am-seg...) and tokens (--am-*); under the classic UI, their amt- equivalents below, in the
+ * theme's colours. The rows, forms, chips and menus are the plugin's own, in either UI's colours;
+ * menus and pickers are drawn over the page, in Fusion's layer.
  */
 
-.amt-panel, .amt-post, .amt-picker, .amt-menu {
+.amt-panel, .amt-post, .amt-picker, .amt-menu, .amt-icons, .amt-head, .amt-bar {
     --amt-fg: var(--am-text, var(--center-channel-color));
+    --amt-fg-2: var(--am-text-2, rgba(var(--center-channel-color-rgb), 0.8));
     --amt-muted: var(--am-muted, rgba(var(--center-channel-color-rgb), 0.64));
     --amt-side: var(--am-side, rgba(var(--center-channel-color-rgb), 0.04));
     --amt-raise: var(--am-raise, rgba(var(--center-channel-color-rgb), 0.08));
     --amt-line: var(--am-line, rgba(var(--center-channel-color-rgb), 0.16));
     --amt-bg: var(--am-main, var(--center-channel-bg));
-    --amt-pop: var(--am-raise-2, var(--center-channel-bg));
+    --amt-pop: var(--am-raise, var(--center-channel-bg));
     --amt-accent: var(--am-matter, var(--button-bg));
-    --amt-shared: #34D399;
+    --amt-accent-soft: var(--am-matter-soft, rgba(var(--button-bg-rgb), 0.12));
     --amt-ok: var(--am-ok, #3db887);
     --amt-danger: var(--am-danger, #d24b4e);
+    --amt-soon: var(--am-spark, #c27d0e);
+    --amt-shadow: var(--am-shadow, 0 8px 24px rgba(0, 0, 0, 0.24));
+
+    /* The app's colour (the app bar's icon), darker on light themes to stay readable */
+    --amt-app: #34D399;
+}
+:root[data-am-theme="light"] :is(.amt-panel, .amt-post, .amt-picker, .amt-menu, .amt-icons, .amt-head, .amt-bar) { --amt-app: #059669; }
+@media (prefers-color-scheme: light) {
+    :root[data-am-theme="system"] :is(.amt-panel, .amt-post, .amt-picker, .amt-menu, .amt-icons, .amt-head, .amt-bar) { --amt-app: #059669; }
 }
 
-/* The panel */
+/* The panel fills the right-hand slot, and scrolls */
+:is(.am-app, .am-layer) .sidebar-right__body:has(> .amt-root) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.amt-root { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.amt-root > .amt-panel { flex: 1; min-height: 0; overflow-y: auto; }
+
 .amt-panel { color: var(--amt-fg); font-size: 14px; }
 .amt-panel button { font: inherit; }
 .amt-seg { display: flex; }
-.amt-seg button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.amt-seg button { flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .amt-count { min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--amt-accent); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
 .amt-toggle { width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
 .amt-list { display: grid; gap: 6px; }
-.amt-empty { padding: 14px 10px; border-radius: 9px; background: var(--amt-side); color: var(--amt-muted); font-size: 13px; text-align: center; }
+.amt-grow { flex: 1; min-width: 0; }
+
+/* Fusion's empty state: the app's icon over a muted line */
+.amt-empty { display: grid; justify-items: center; gap: 8px; padding: 22px 14px; border-radius: 9px; background: var(--amt-side); color: var(--amt-muted); font-size: 13px; text-align: center; }
+.amt-empty .am-ic, .amt-empty .icon { width: 26px; height: 26px; font-size: 24px; color: var(--amt-app); opacity: 0.8; }
 .amt-note { font-size: 12.5px; }
 .amt-muted { color: var(--amt-muted); }
 .amt-error { padding: 7px 10px; border-radius: 8px; background: color-mix(in srgb, var(--amt-danger) 12%, transparent); color: var(--amt-danger); font-size: 13px; }
+
+/* The panel's header: "Todo" and the + over the lists; back, the list's tile, name, scope, star and
+   actions over an open list. */
+.amt-head { flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; color: var(--amt-fg); }
+.amt-head button { border: 0; background: none; color: inherit; cursor: pointer; }
+.amt-head-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.amt-head-slot { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.amt-head-open .amt-head-slot { flex: 1; }
+.amt-bar { display: flex; align-items: center; gap: 6px; margin: -10px -12px 0; padding: 6px 8px; border-bottom: 1px solid var(--amt-line); }
+.amt-h-btn { width: 32px; height: 32px; }
+/* Over an open list, its back button (a chevron and the app's icon) takes the place of the panel's app icon. */
+:is(.am-app, .am-layer) .am-rhs-classic:has(.amt-head-open) .am-rhs-app-ic { display: none; }
+:is(.am-app, .am-layer) .am-rhs-classic:has(.amt-head-open):has(.am-rhs-app-ic) .sidebar--right__title { padding-left: 0; }
+.amt-icon-btn.amt-back { flex: none; width: auto; height: 32px; margin-left: -6px; padding: 0 4px 0 2px; display: flex; align-items: center; gap: 0; }
+.amt-back .am-ic:last-child, .amt-back .icon:last-child { width: 18px; height: 18px; color: var(--amt-app); }
+.am-ic.am-ic-back { transform: rotate(90deg); }
+.amt-title { flex: 1; min-width: 0; height: 32px; padding: 0 8px; border: 1px solid transparent; border-radius: 7px; background: none; color: var(--amt-fg); font: 600 15px var(--am-font-display, inherit); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; outline: none; }
+.amt-title-static { display: flex; align-items: center; }
+input.amt-title:hover:not(:read-only) { border-color: var(--amt-line); }
+input.amt-title:focus { border-color: var(--amt-accent); background: var(--amt-bg); }
+.amt-tile-btn { flex: none; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: none; cursor: pointer; }
+.amt-tile-btn:disabled { cursor: default; }
+.amt-tile-btn .amt-tile { width: 26px; height: 26px; }
+
+/* A list's tile: its emoji or the app's checklist, filled for a shared list, outlined with a lock for
+   the user's own (muted would read as disabled). */
+.amt-tile { position: relative; flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: color-mix(in srgb, var(--amt-app) 16%, transparent); color: var(--amt-app); }
+.amt-tile .am-ic, .amt-tile .icon { width: 18px; height: 18px; font-size: 17px; }
+.amt-tile-emoji { font-size: 16px; line-height: 1; }
+.amt-tile-personal { background: transparent; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--amt-app) 70%, transparent); }
+.amt-tile-lock { position: absolute; right: -4px; bottom: -4px; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--amt-side); color: var(--amt-app); }
+.amt-tile-lock .am-ic, .amt-tile-lock .icon { width: 10px; height: 10px; font-size: 10px; }
+
+/* The lists of a tab */
+.amt-list-row { cursor: pointer; }
+.amt-list-main { min-width: 0; display: grid; }
+.amt-list-main b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.amt-sub { display: flex !important; align-items: center; gap: 8px; min-width: 0; }
+.amt-list-count { min-width: 20px; color: var(--amt-muted); font-size: 12px; font-weight: 700; text-align: right; }
+.amt-archived .amt-list-row { opacity: 0.75; }
+.amt-new-list { padding: 8px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-side); }
+
+/* Where a list is */
+.amt-scope { flex: none; display: inline-flex; align-items: center; gap: 4px; max-width: 140px; height: 22px; padding: 0 8px; border-radius: 11px; font-size: 11.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.amt-scope .am-ic, .amt-scope .icon { flex: none; width: 12px; height: 12px; font-size: 12px; }
+.amt-scope-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.amt-scope-channel, .amt-scope-conversation { background: color-mix(in srgb, var(--amt-app) 16%, transparent); color: var(--amt-app); }
+.amt-scope-personal { background: transparent; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--amt-app) 70%, transparent); color: var(--amt-app); }
+.amt-scope.amt-scope-compact { width: 22px; padding: 0; justify-content: center; }
+
+/* Due dates: muted, amber when soon, red when overdue */
+.amt-due { display: inline-flex; align-items: center; gap: 4px; color: var(--amt-muted); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.amt-due .am-ic, .amt-due .icon { width: 12px; height: 12px; font-size: 12px; }
+.amt-due-today, .amt-due-tomorrow, .amt-due-soon { color: var(--amt-soon); }
+.amt-due-overdue { color: var(--amt-danger); }
+.amt-date { width: 100%; max-width: 220px; margin-top: 6px; padding: 6px 9px; border: 1px solid var(--amt-line); border-radius: 8px; background: var(--amt-bg); color: var(--amt-fg); font: inherit; font-size: 13px; color-scheme: inherit; }
 
 /* Rows */
 .amt-row { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 9px 8px 9px 10px; border-radius: 9px; background: var(--amt-side); }
@@ -56,35 +131,49 @@
 .amt-row-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .amt-row-menu { position: relative; }
 
-/* Buttons and menus */
+/* Buttons */
 .amt-btn { height: 32px; padding: 0 12px; border: 1px solid var(--amt-line); border-radius: 8px; background: var(--amt-raise); color: var(--amt-fg); font-weight: 600; font-size: 13px; cursor: pointer; }
 .amt-btn:hover { border-color: var(--amt-muted); }
 .amt-btn.amt-primary { border-color: var(--amt-accent); background: var(--amt-accent); color: #fff; }
 .amt-btn.amt-danger { color: var(--amt-danger); }
+.amt-btn.amt-danger-fill { border-color: var(--amt-danger); background: var(--amt-danger); color: #fff; }
 .amt-btn.amt-small { height: 28px; padding: 0 10px; font-size: 12.5px; }
 .amt-btn:disabled { opacity: 0.5; cursor: default; }
 .amt-icon-btn { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 7px; background: none; color: var(--amt-muted); cursor: pointer; }
 .amt-icon-btn:hover { background: var(--amt-raise); color: var(--amt-fg); }
 .amt-icon-btn.amt-tiny { width: 20px; height: 20px; }
-.amt-menu { position: absolute; top: 30px; right: 0; z-index: 20; display: grid; min-width: 180px; padding: 5px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-pop); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); }
-.amt-menu button { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 0; border-radius: 7px; background: none; color: var(--amt-fg); font-size: 13px; text-align: left; cursor: pointer; }
-.amt-menu button:hover { background: var(--amt-raise); }
+
+/* Menus and pickers, over the page (in Fusion's layer, which gives them its font) */
+.amt-layer, .am-layer.amt-layer { background: none; }
+.amt-menu { position: fixed; z-index: 10000; display: grid; gap: 1px; min-width: 190px; max-width: calc(100vw - 16px); padding: 5px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-pop); color: var(--amt-fg); box-shadow: var(--amt-shadow); }
+.amt-menu button { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 0; border-radius: 7px; background: none; color: var(--amt-fg); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.amt-menu button:hover { background: var(--amt-accent); color: #fff; }
 .amt-menu .amt-danger { color: var(--amt-danger); }
+.amt-menu .amt-danger:hover { background: var(--amt-danger); color: #fff; }
+.amt-icons { position: fixed; z-index: 10000; display: grid; gap: 8px; width: 236px; max-width: calc(100vw - 16px); padding: 8px; border: 1px solid var(--amt-line); border-radius: 12px; background: var(--amt-pop); color: var(--amt-fg); box-shadow: var(--amt-shadow); }
+.amt-icons-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
+.amt-icons-grid button { display: grid; place-items: center; height: 28px; padding: 0; border: 0; border-radius: 7px; background: none; font-size: 17px; cursor: pointer; }
+.amt-icons-grid button:hover { background: var(--amt-raise); }
+.amt-icons-grid button.amt-on { background: var(--amt-accent-soft); box-shadow: inset 0 0 0 1.5px var(--amt-accent); }
+
+/* Deleting a list: the confirmation, in the page */
+.amt-confirm { display: grid; gap: 8px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--amt-danger) 50%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--amt-danger) 8%, transparent); color: var(--amt-fg); font-size: 13px; }
 
 /* Forms */
 .amt-add, .amt-edit { position: relative; display: grid; gap: 8px; }
 .amt-add-row { display: flex; gap: 8px; }
-.amt-add input, .amt-add textarea, .amt-edit input, .amt-edit textarea, .amt-picker input {
+.amt-add input, .amt-add textarea, .amt-edit input, .amt-edit textarea, .amt-picker input, .amt-field select {
     width: 100%; min-width: 0; padding: 7px 10px; border: 1px solid var(--amt-line); border-radius: 8px; background: var(--amt-bg); color: var(--amt-fg); font: inherit; font-size: 14px; outline: none;
 }
-.amt-add input:focus, .amt-add textarea:focus, .amt-edit input:focus, .amt-edit textarea:focus, .amt-picker input:focus { border-color: var(--amt-accent); }
+.amt-add input:focus, .amt-add textarea:focus, .amt-edit input:focus, .amt-edit textarea:focus, .amt-picker input:focus, .amt-field select:focus { border-color: var(--amt-accent); }
 .amt-add textarea, .amt-edit textarea { resize: vertical; }
 .amt-add-options { display: flex; flex-wrap: wrap; gap: 6px; }
 .amt-chip { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border: 1px solid var(--amt-line); border-radius: 13px; background: none; color: var(--amt-muted); font-size: 12.5px; font-weight: 600; cursor: pointer; }
 .amt-chip.amt-on { border-color: var(--amt-accent); color: var(--amt-fg); }
 .amt-from { display: inline-flex; align-items: center; gap: 6px; width: fit-content; padding: 2px 4px 2px 9px; border-radius: 12px; background: var(--amt-raise); color: var(--amt-muted); font-size: 12px; }
 .amt-edit-actions { display: flex; justify-content: flex-end; gap: 6px; }
-.amt-picker { position: relative; z-index: 15; display: grid; gap: 6px; margin-top: 6px; padding: 8px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-pop); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24); }
+.amt-field { display: grid; gap: 4px; color: var(--amt-muted); font-size: 12px; font-weight: 600; }
+.amt-picker { position: relative; z-index: 15; display: grid; gap: 6px; margin-top: 6px; padding: 8px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-pop); box-shadow: var(--amt-shadow); }
 .amt-picker-list { display: grid; max-height: 220px; overflow-y: auto; }
 .amt-picker-list button { display: flex; align-items: center; gap: 8px; padding: 6px; border: 0; border-radius: 7px; background: none; color: var(--amt-fg); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
 .amt-picker-list button:hover { background: var(--amt-raise); }
@@ -101,17 +190,31 @@
 /* Classic UI: Fusion's app panel classes */
 .amt-app-panel { display: grid; gap: 10px; align-content: start; padding: 10px 12px 16px; }
 .amt-app-h { display: flex; align-items: center; gap: 8px; margin: 6px 2px 0; color: var(--amt-muted); font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
-.amt-grow { flex: 1; text-align: left; }
+.amt-app-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; padding: 9px 10px; border: 0; border-radius: 9px; background: var(--amt-side); color: var(--amt-fg); text-align: left; }
+.amt-app-row:hover { background: var(--amt-raise); }
+.amt-app-row b { display: block; font-size: 13.5px; }
+.amt-app-row .amt-sub { font-size: 12px; color: var(--amt-muted); }
 .amt-seg.amt-seg { padding: 3px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-side); gap: 2px; }
 .amt-seg button { height: 30px; border: 0; border-radius: 7px; background: none; color: var(--amt-muted); font-weight: 600; font-size: 13.5px; cursor: pointer; }
 .amt-seg button.amt-on { background: var(--amt-raise); color: var(--amt-fg); }
 
-/* The todos of a channel's list (shared) carry the app's colour; your own lists' don't. */
-.amt-row.amt-shared { box-shadow: inset 3px 0 0 var(--amt-shared); }
+/* The todos of a shared list (a channel's) carry the app's colour; your own lists' don't. */
+.amt-row.amt-shared { box-shadow: inset 3px 0 0 var(--amt-app); }
 
-/* Following a channel's list: the star by its title, filled when followed. */
-.amt-star { display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--amt-muted); cursor: pointer; }
+/* A favorite's star, filled when starred. */
+.amt-star { flex: none; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 7px; background: none; color: var(--amt-muted); cursor: pointer; }
 .amt-star:hover { background: var(--amt-side); color: var(--amt-fg); }
 .amt-star.amt-on { color: #F0B232; }
 .amt-star.amt-on svg { fill: currentColor; }
-.amt-grow-link { flex: 1; min-width: 0; justify-content: flex-start; font-weight: 700; text-transform: none; letter-spacing: 0; }
+
+/* Phones: the header keeps its buttons, rows and forms wrap */
+@media (max-width: 480px) {
+    .amt-head .amt-scope-compact { display: none; }
+    .amt-title { font-size: 14px; padding: 0 4px; }
+    .amt-add-row { flex-wrap: wrap; }
+    .amt-add-row input { flex-basis: 100%; }
+    .amt-add-row .amt-btn { flex: 1; }
+    .amt-seg button { font-size: 12.5px; padding: 0 6px; }
+    .amt-row { padding: 9px 6px 9px 8px; gap: 8px; }
+    .amt-confirm .amt-edit-actions .amt-btn { flex: 1; }
+}

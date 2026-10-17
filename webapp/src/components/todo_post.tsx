@@ -8,7 +8,7 @@ import type {Post} from '@mattermost/types/posts';
 
 import * as client from '../client';
 import {messages} from '../messages';
-import {refreshPersonal, usePersonal} from '../state';
+import {refreshIndex, refreshRequests, useRequests} from '../state';
 
 import {Text} from './todo_row';
 
@@ -19,14 +19,14 @@ type TodoProps = {
     issueId?: string;
 };
 
-// TodoPost is the bot's message about a todo someone sent the user: they accept it, mark it done
-// or decline it from here while it's waiting for their answer.
+// TodoPost is the bot's message about a todo someone sent the user: they accept it (into their
+// default list), mark it done or decline it from here while it's waiting for their answer.
 export default function TodoPost({post}: {post: Post}) {
     const intl = useIntl();
     const {message, todo, postPermalink, issueId} = (post.props || {}) as TodoProps;
-    const personal = usePersonal();
+    const requests = useRequests();
     const [error, setError] = useState('');
-    const waiting = Boolean(issueId && personal.lists?.in.some((i) => i.id === issueId));
+    const waiting = Boolean(issueId && requests.lists?.in.some((i) => i.id === issueId));
 
     const run = async (call: () => Promise<unknown>) => {
         setError('');
@@ -35,7 +35,8 @@ export default function TodoPost({post}: {post: Post}) {
         } catch (err) {
             setError(intl.formatMessage(messages.error, {error: (err as Error).message}));
         }
-        await refreshPersonal();
+        await refreshRequests();
+        refreshIndex('mine');
     };
 
     return (
@@ -76,7 +77,7 @@ export default function TodoPost({post}: {post: Post}) {
                         </button>
                     </div>
                 )}
-                {!waiting && personal.lists && issueId && <div className='amt-muted'>{intl.formatMessage(messages.postAccepted)}</div>}
+                {!waiting && requests.lists && issueId && <div className='amt-muted'>{intl.formatMessage(messages.postAccepted)}</div>}
                 {error && (
                     <div
                         className='amt-error'
