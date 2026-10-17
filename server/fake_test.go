@@ -234,6 +234,24 @@ func (f *fakeAPI) HasPermissionToChannel(userID, channelID string, permission *m
 	return false
 }
 
+func (f *fakeAPI) GetTeamsForUser(string) ([]*model.Team, *model.AppError) {
+	return []*model.Team{{Id: teamID, Name: "lumen"}}, nil
+}
+
+// GetChannelsForTeamForUser returns someone's channels of a team, with their direct and group
+// messages, as the server does.
+func (f *fakeAPI) GetChannelsForTeamForUser(team, userID string, _ bool) ([]*model.Channel, *model.AppError) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	var channels []*model.Channel
+	for id, channel := range f.channels {
+		if f.isMember(id, userID) && (channel.TeamId == team || channel.TeamId == "") {
+			channels = append(channels, channel)
+		}
+	}
+	return channels, nil
+}
+
 func (f *fakeAPI) GetUser(userID string) (*model.User, *model.AppError) {
 	if user, ok := f.users[userID]; ok {
 		return user, nil

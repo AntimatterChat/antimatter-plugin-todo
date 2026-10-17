@@ -61,6 +61,9 @@ func (p *Plugin) SendItem(userID, listID, itemID, username string) (string, erro
 	if receiver.Id == userID {
 		return "", newAPIError(http.StatusBadRequest, "this todo is yours already")
 	}
+	if err = p.canSendTo(userID, receiver.Id); err != nil {
+		return "", err
+	}
 	if allowed, err := p.getAllowIncomingTaskRequestsPreference(receiver.Id); err == nil && !allowed {
 		return "", newAPIError(http.StatusForbidden, "@%s has blocked Todo requests", receiver.Username)
 	}

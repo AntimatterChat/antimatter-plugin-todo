@@ -198,6 +198,10 @@ func (p *Plugin) handleAdd(w http.ResponseWriter, r *http.Request) {
 			p.handleErrorWithCode(w, http.StatusInternalServerError, msg, appErr)
 			return
 		}
+		if err = p.canSendTo(userID, receiver.Id); err != nil {
+			p.handleErrorWithCode(w, errorStatus(err), "Unable to find user", err)
+			return
+		}
 	}
 
 	if receiver == nil || receiver.Id == userID {
@@ -417,6 +421,10 @@ func (p *Plugin) handleChangeAssignment(w http.ResponseWriter, r *http.Request) 
 		msg := "username not valid"
 		p.API.LogError(msg, "err", appErr.Error())
 		p.handleErrorWithCode(w, http.StatusNotFound, msg, appErr)
+		return
+	}
+	if err = p.canSendTo(userID, receiver.Id); err != nil {
+		p.handleErrorWithCode(w, http.StatusNotFound, "username not valid", err)
 		return
 	}
 

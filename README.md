@@ -28,7 +28,8 @@ without changing them; people outside the channel don't see them at all.
 A message's **Add to todo** starts a todo with its text, linked to the message, and asks which list it goes to:
 the list you last added to from that channel, else the channel's first list, else **My todos**. When someone
 assigns you a todo or sends you one, the Todo bot tells you, and its message lets you answer. Once a day, the bot
-reminds you of the todos of your lists and the ones assigned to you.
+reminds you of the todos of your lists and the ones assigned to you. Guests send todos only to people they share
+a channel with.
 
 The `/todo` command works too: `/todo lists`, `/todo new <name>` (`--personal` for a list of your own),
 `/todo add <message>` (to **My todos**, or the personal list you last added to from the channel: never a shared

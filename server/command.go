@@ -180,7 +180,7 @@ func (p *Plugin) runSendCommand(args []string, extra *model.CommandArgs) (bool, 
 		userName = args[0][1:]
 	}
 	receiver, appErr := p.API.GetUserByUsername(userName)
-	if appErr != nil {
+	if appErr != nil || p.canSendTo(extra.UserId, receiver.Id) != nil {
 		p.postCommandResponse(extra, "Please, provide a valid user.\n"+getHelp())
 		return false, nil
 	}

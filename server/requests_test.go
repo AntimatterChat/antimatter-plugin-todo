@@ -217,3 +217,35 @@ func TestHTTPAcceptIntoAList(t *testing.T) {
 	require.Equal(t, http.StatusOK, w.Code, w.Body.String())
 	assert.Equal(t, []string{"Sign the PO"}, messages(t, p, defaultPersonalListID(bob)))
 }
+
+// Guests send todos only to people they share a channel with; to them, anyone else isn't found.
+func TestGuestsSendOnlyToPeopleTheyShareAChannelWith(t *testing.T) {
+	p, api := newTestPlugin(t)
+	send := func(from, to string) error {
+		mine, err := p.ensurePersonal(from)
+		require.NoError(t, err)
+		item := addItem(t, p, from, mine.ID, "Check the slides")
+		_, err = p.SendItem(from, mine.ID, item.ID, to)
+		return err
+	}
+
+	require.NoError(t, send(guest, "bob"), "bob is in town with the guest")
+	assert.Equal(t, http.StatusNotFound, status(send(guest, "reader")), "reader shares no channel with the guest")
+	assert.Equal(t, http.StatusNotFound, status(send(visitor, "alice")), "a guest in no channel sends to nobody")
+	require.NoError(t, send(alice, "reader"), "members aren't restricted")
+
+	w := call(t, p, guest, http.MethodPost, "/add", map[string]string{"message": "x", "send_to": "reader"})
+	assert.Equal(t, http.StatusNotFound, w.Code, "nor through the API of before lists")
+	answer := run(t, p, guest, town, "/todo send @reader x")
+	assert.Contains(t, answer, "Please, provide a valid user", "nor the command")
+	received, err := p.listManager.GetIssueList(reader, InListKey)
+	require.NoError(t, err)
+	assert.Len(t, received, 1, "only alice's")
+	assert.Empty(t, api.dms[reader][1:])
+
+	// Reassigning a todo sent: the same
+	out := sent(t, p, guest)
+	require.Len(t, out, 1)
+	w = call(t, p, guest, http.MethodPost, "/change_assignment", map[string]string{"id": out[0].ID, "send_to": "reader"})
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}

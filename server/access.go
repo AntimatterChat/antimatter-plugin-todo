@@ -25,6 +25,7 @@ import (
 //   - Only a member of the channel can be assigned a todo of its lists. In a personal list, a todo
 //     is sent to someone instead: it leaves the list, and they get it as a request (see
 //     requests.go), as before lists existed.
+//   - A guest sends todos only to people they share a channel with, the people they can see.
 
 // channelRights are what someone may do in a channel.
 type channelRights struct {
@@ -170,4 +171,42 @@ func (p *Plugin) permalink(channel *model.Channel, postID string) string {
 		}
 	}
 	return fmt.Sprintf("%s/_redirect/pl/%s", siteURL, postID)
+}
+
+// canSendTo tells whether someone may send a todo to someone else: anyone may, except guests, who
+// may only send them to people they share a channel with (the people Antimatter lets them see).
+// Anyone else is "not found" to a guest, as they are in the people picker.
+func (p *Plugin) canSendTo(senderID, receiverID string) error {
+	sender, appErr := p.API.GetUser(senderID)
+	if appErr != nil {
+		return appErr
+	}
+	if !sender.IsGuest() || senderID == receiverID {
+		return nil
+	}
+	teams, appErr := p.API.GetTeamsForUser(senderID)
+	if appErr != nil {
+		return appErr
+	}
+	// The team's channels include the direct and group messages.
+	for _, team := range teams {
+		mine, appErr := p.API.GetChannelsForTeamForUser(team.Id, senderID, false)
+		if appErr != nil {
+			return appErr
+		}
+		theirs, appErr := p.API.GetChannelsForTeamForUser(team.Id, receiverID, false)
+		if appErr != nil {
+			continue
+		}
+		shared := make(map[string]bool, len(mine))
+		for _, channel := range mine {
+			shared[channel.Id] = true
+		}
+		for _, channel := range theirs {
+			if shared[channel.Id] {
+				return nil
+			}
+		}
+	}
+	return newAPIError(http.StatusNotFound, "user not found")
 }
