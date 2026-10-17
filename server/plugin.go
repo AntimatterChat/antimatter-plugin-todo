@@ -86,7 +86,7 @@ func (p *Plugin) OnActivate() error {
 	botID, err := p.client.Bot.EnsureBot(&model.Bot{
 		Username:    "todo",
 		DisplayName: "Todo Bot",
-		Description: "Created by the Todo plugin.",
+		Description: "Created by the Todo app.",
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to ensure todo bot")

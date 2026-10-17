@@ -204,7 +204,7 @@ input.amt-title:focus { border-color: var(--amt-accent); background: var(--amt-b
 /* A favorite's star, filled when starred. */
 .amt-star { flex: none; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 7px; background: none; color: var(--amt-muted); cursor: pointer; }
 .amt-star:hover { background: var(--amt-side); color: var(--amt-fg); }
-.amt-star.amt-on { color: #F0B232; }
+.amt-star.amt-on { color: var(--am-spark, #F0B232); }
 .amt-star.amt-on svg { fill: currentColor; }
 
 /* Phones: the header keeps its buttons, rows and forms wrap */
