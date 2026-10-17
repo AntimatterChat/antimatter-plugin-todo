@@ -66,7 +66,7 @@
 .amt-icon-btn { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 7px; background: none; color: var(--amt-muted); cursor: pointer; }
 .amt-icon-btn:hover { background: var(--amt-raise); color: var(--amt-fg); }
 .amt-icon-btn.amt-tiny { width: 20px; height: 20px; }
-.amt-menu { position: absolute; top: 30px; right: 0; z-index: 20; display: grid; min-width: 180px; padding: 5px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-pop); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); }
+.amt-menu { position: absolute; top: 30px; right: 0; z-index: 20; display: grid; min-width: 180px; padding: 5px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-pop); box-shadow: var(--am-shadow, 0 8px 24px rgba(0, 0, 0, 0.28)); }
 .amt-menu button { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border: 0; border-radius: 7px; background: none; color: var(--amt-fg); font-size: 13px; text-align: left; cursor: pointer; }
 .amt-menu button:hover { background: var(--amt-raise); }
 .amt-menu .amt-danger { color: var(--amt-danger); }
@@ -84,7 +84,7 @@
 .amt-chip.amt-on { border-color: var(--amt-accent); color: var(--amt-fg); }
 .amt-from { display: inline-flex; align-items: center; gap: 6px; width: fit-content; padding: 2px 4px 2px 9px; border-radius: 12px; background: var(--amt-raise); color: var(--amt-muted); font-size: 12px; }
 .amt-edit-actions { display: flex; justify-content: flex-end; gap: 6px; }
-.amt-picker { position: relative; z-index: 15; display: grid; gap: 6px; margin-top: 6px; padding: 8px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-pop); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24); }
+.amt-picker { position: relative; z-index: 15; display: grid; gap: 6px; margin-top: 6px; padding: 8px; border: 1px solid var(--amt-line); border-radius: 10px; background: var(--amt-pop); box-shadow: var(--am-shadow, 0 8px 24px rgba(0, 0, 0, 0.24)); }
 .amt-picker-list { display: grid; max-height: 220px; overflow-y: auto; }
 .amt-picker-list button { display: flex; align-items: center; gap: 8px; padding: 6px; border: 0; border-radius: 7px; background: none; color: var(--amt-fg); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
 .amt-picker-list button:hover { background: var(--amt-raise); }
@@ -112,6 +112,6 @@
 /* Following a channel's list: the star by its title, filled when followed. */
 .amt-star { display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--amt-muted); cursor: pointer; }
 .amt-star:hover { background: var(--amt-side); color: var(--amt-fg); }
-.amt-star.amt-on { color: #F0B232; }
+.amt-star.amt-on { color: var(--am-spark, #F0B232); }
 .amt-star.amt-on svg { fill: currentColor; }
 .amt-grow-link { flex: 1; min-width: 0; justify-content: flex-start; font-weight: 700; text-transform: none; letter-spacing: 0; }
