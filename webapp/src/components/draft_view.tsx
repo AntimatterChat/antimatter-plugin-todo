@@ -15,7 +15,7 @@ import Icon from '../ui/icon';
 import {cx} from '../ui/web_ui';
 
 import AddForm from './add_form';
-import {HeadPortal} from './todo_header';
+import {TodoToolbar} from './todo_toolbar';
 
 // DraftView adds a todo started from a message ("Add to todo"): which list it goes to (the one last
 // used from the message's channel, else the channel's first list, else the user's default one),
@@ -46,7 +46,7 @@ export default function DraftView({draft}: {draft: Draft}) {
 
     return (
         <div className={cx('app-panel') + ' amt-panel'}>
-            <HeadPortal>
+            <TodoToolbar>
                 <button
                     type='button'
                     className='amt-icon-btn amt-back'
@@ -55,10 +55,9 @@ export default function DraftView({draft}: {draft: Draft}) {
                     onClick={cancel}
                 >
                     <Icon name='back'/>
-                    <Icon name='checkbox'/>
                 </button>
                 <span className='amt-title amt-title-static'>{intl.formatMessage(messages.addFromMessage)}</span>
-            </HeadPortal>
+            </TodoToolbar>
             {error && (
                 <div
                     className='amt-error'

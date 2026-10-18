@@ -46,10 +46,6 @@ let closedIn: string | null = null;
 // The panel is shown by the host (see index.tsx).
 let showPanel: () => void = () => null;
 
-// The app draws its header in the panel's header (TodoHeader, the title it gives the host): the row
-// where the list of lists and the open list put their title and actions, while it's shown.
-let headSlot: HTMLElement | null = null;
-
 function set(change: Partial<State>) {
     state = {...state, ...change};
     listeners.forEach((l) => l());
@@ -74,7 +70,6 @@ export function getState() {
 export function resetState() {
     state = initial();
     closedIn = null;
-    headSlot = null;
     listeners.forEach((l) => l());
 }
 
@@ -233,23 +228,4 @@ export function openDraft(draft: Draft) {
     closedIn = null;
     set({draft});
     showPanel();
-}
-
-export function setHeadSlot(element: HTMLElement) {
-    if (headSlot !== element) {
-        headSlot = element;
-        listeners.forEach((l) => l());
-    }
-}
-
-// clearHeadSlot forgets the header's row as it goes away, unless another took its place.
-export function clearHeadSlot(element: HTMLElement) {
-    if (headSlot === element) {
-        headSlot = null;
-        listeners.forEach((l) => l());
-    }
-}
-
-export function useHeadSlot() {
-    return useSyncExternalStore(subscribe, () => headSlot);
 }

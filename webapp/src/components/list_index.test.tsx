@@ -10,7 +10,6 @@ import {mockFetch, renderWithHost} from '../../tests/utils';
 import {resetState, setView} from '../state';
 import type {ListInfo} from '../types/todo';
 
-import TodoHeader from './todo_header';
 import TodoPanel from './todo_panel';
 
 jest.mock('../manifest', () => ({__esModule: true, default: {id: 'todo'}}));
@@ -57,22 +56,18 @@ const setWebUI = (ui?: 'classic' | 'fusion') => {
     }
 };
 
-// renderApp renders the app as the host does: its title (TodoHeader) in the panel's header, the panel under it.
+// renderApp renders the panel as the host does, under the host's header (which only names the app).
 function renderApp(channel: Channel = firmware) {
     return renderWithHost(
-        <>
-            <div data-testid='panel-header'>
-                <TodoHeader/>
-            </div>
-            <div data-testid='panel'>
-                <TodoPanel/>
-            </div>
-        </>,
+        <div data-testid='panel'>
+            <TodoPanel/>
+        </div>,
         {channel},
     );
 }
 
-const header = () => within(screen.getByTestId('panel-header'));
+// An open list's toolbar, at the top of the panel; the lists have none.
+const header = () => within(screen.getByTestId('todo-toolbar'));
 const panel = () => within(screen.getByTestId('panel'));
 const head = () => screen.getByTestId('todo-section-head');
 const headButtons = () => within(head()).queryAllByRole('button');
@@ -94,7 +89,7 @@ function inBoth(name: string, run: (ui: 'fusion' | 'classic') => Promise<void>) 
     }
 }
 
-inBoth('the header row sits right under the tabs: "Shared with" the channel, and its + on the right, not in the panel\'s header', async () => {
+inBoth('the header row sits right under the tabs: "Shared with" the channel, and its + on the right, with no toolbar above', async () => {
     mockFetch([...base, {path: '/api/v1/lists?scope=channel', body: [info('l1', 'Launch', {open_count: 3})]}]);
     renderApp();
 
@@ -104,8 +99,7 @@ inBoth('the header row sits right under the tabs: "Shared with" the channel, and
     expect(headButtons()).toHaveLength(1);
     const add = within(head()).getByRole('button', {name: 'New list in this channel'});
     expect(add.previousElementSibling).toHaveTextContent('Shared with Firmware');
-    expect(header().getByText('Todo')).toBeInTheDocument();
-    expect(header().queryByRole('button')).toBeNull();
+    expect(screen.queryByTestId('todo-toolbar')).toBeNull();
 });
 
 inBoth('the + opens the new list\'s form under the header row, and closes it', async () => {

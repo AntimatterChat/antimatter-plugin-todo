@@ -1,7 +1,7 @@
 // Copyright (c) 2026-present Antimatter contributors.
 // See LICENSE for license information.
 
-import {act, fireEvent, screen, waitFor} from '@testing-library/react';
+import {act, fireEvent, screen, waitFor, within} from '@testing-library/react';
 import React from 'react';
 
 import type {Channel} from '@mattermost/types/channels';
@@ -10,7 +10,6 @@ import {mockFetch, renderWithHost} from '../../tests/utils';
 import {getState, resetState, restorePanel} from '../state';
 import type {ListInfo} from '../types/todo';
 
-import TodoHeader from './todo_header';
 import TodoPanel from './todo_panel';
 
 jest.mock('../manifest', () => ({__esModule: true, default: {id: 'todo'}}));
@@ -43,13 +42,7 @@ const base = [
 ];
 
 function renderPanel(props: {setPanelState?: (state: string | null) => void; initialPanelState?: string} = {}) {
-    return renderWithHost(
-        <>
-            <TodoHeader/>
-            <TodoPanel {...props}/>
-        </>,
-        {channel},
-    );
+    return renderWithHost(<TodoPanel {...props}/>, {channel});
 }
 
 beforeEach(() => {
@@ -117,4 +110,17 @@ test('without the props, the panel works as before', async () => {
     expect(await screen.findByDisplayValue('Launch')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', {name: 'All lists'}));
     expect(await screen.findByRole('tab', {name: 'This channel'})).toBeInTheDocument();
+});
+
+test("an open list's back button, name and actions are in its toolbar, at the top of the panel, with a plain chevron", async () => {
+    mockFetch([...base, {path: '/api/v1/lists?scope=channel', body: [launch]}, {path: `/api/v1/lists/${listId}`, body: {...launch, items: []}}]);
+    renderPanel({initialPanelState: `list/${listId}`});
+
+    const toolbar = await screen.findByTestId('todo-toolbar');
+    expect(within(toolbar).getByDisplayValue('Launch')).toBeInTheDocument();
+    const back = within(toolbar).getByRole('button', {name: 'All lists'});
+
+    // The host's header above has the app's icon: the back button has the chevron only.
+    expect(back.querySelectorAll('svg, i, img')).toHaveLength(1);
+    expect(screen.getAllByRole('button', {name: 'All lists'})).toHaveLength(1);
 });

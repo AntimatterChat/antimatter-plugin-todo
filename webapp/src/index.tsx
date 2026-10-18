@@ -8,7 +8,6 @@ import {Client4} from 'mattermost-redux/client';
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
 
-import TodoHeader from './components/todo_header';
 import TodoPanel from './components/todo_panel';
 import TodoPost from './components/todo_post';
 import manifest from './manifest';
@@ -31,10 +30,6 @@ const REMINDER_IDLE = 60 * 60 * 1000;
 
 const title = <FormattedMessage {...messages.app}/>;
 
-// The panel's header shows the app's own: "Todo" over the lists (whose + is in the tab's header
-// row, as in Notes and Whiteboard), back and the list's name and actions over an open list.
-const header = <TodoHeader/>;
-
 export default class Plugin implements PluginClass {
     private onActivity?: () => void;
 
@@ -45,13 +40,15 @@ export default class Plugin implements PluginClass {
             Client4.setUrl(window.basename);
         }
 
-        // The app bar opens the todo panel; hosts without it get a channel header button.
+        // The app bar opens the todo panel; hosts without it get a channel header button. The panel's
+        // title is the app's name, which the host's panel header shows: an open list's back button,
+        // name and actions are in the panel's own toolbar row (TodoToolbar), not in the header.
         let rhs: RightHandSidebarRegistration;
-        const appBar = registry.registerAppBarComponent?.({iconUrl: appBarIcon, tooltipText: <FormattedMessage {...messages.appTooltip}/>, rhsComponent: TodoPanel, rhsTitle: header});
+        const appBar = registry.registerAppBarComponent?.({iconUrl: appBarIcon, tooltipText: <FormattedMessage {...messages.appTooltip}/>, rhsComponent: TodoPanel, rhsTitle: title});
         if (appBar && typeof appBar === 'object') {
             rhs = appBar.rhsComponent;
         } else {
-            rhs = registry.registerRightHandSidebarComponent(TodoPanel, header);
+            rhs = registry.registerRightHandSidebarComponent(TodoPanel, title);
         }
         registry.registerChannelHeaderButtonAction(
             <Icon name='checkbox'/>,

@@ -19,7 +19,7 @@ const GAP = 4;
 const MARGIN = 8;
 
 // Layer is drawn over the page, in Fusion's layer (which Fusion styles) under the Fusion UI: what's
-// in the panel's header, or in a row near the panel's edge, would be clipped.
+// in the list's toolbar, or in a row near the panel's edge, would be clipped.
 export function Layer({children}: {children: React.ReactNode}) {
     return createPortal(
         <div className={(isFusionUI() ? 'am-layer ' : '') + 'amt-layer'}>{children}</div>,

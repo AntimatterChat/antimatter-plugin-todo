@@ -6,8 +6,9 @@ import {isFusion} from './fusion_ui';
 export type TipProps = {'data-am-tip': string} | {title: string};
 
 // tip gives an element its tooltip, spread on it (<button {...tip(label)}>): Fusion's tooltip under the Fusion UI (a
-// data-am-tip attribute, which Fusion shows above the element under the pointer or the keyboard, in its own style),
-// the browser's (a title) under the classic UI.
+// data-am-tip attribute, which Fusion shows above the element under the pointer or the keyboard, in its own style,
+// and below it when there's no room above, as in a toolbar at the top of the window), the browser's (a title) under
+// the classic UI. Fusion places it: nothing to do here for the top edge.
 export function tip(label: string): TipProps {
     return isFusion() ? {'data-am-tip': label} : {title: label};
 }

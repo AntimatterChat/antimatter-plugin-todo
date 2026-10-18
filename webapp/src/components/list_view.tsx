@@ -22,7 +22,7 @@ import IconPicker from './icon_picker';
 import ItemRow from './item_row';
 import Menu, {type Action} from './menu';
 import ScopeChip, {FavoriteButton, ListTile} from './scope';
-import {HeadPortal} from './todo_header';
+import {TodoToolbar} from './todo_toolbar';
 
 function TitleInput({list, inputRef}: {list: ListDetail; inputRef: React.RefObject<HTMLInputElement | null>}) {
     const intl = useIntl();
@@ -70,7 +70,8 @@ function TitleInput({list, inputRef}: {list: ListDetail; inputRef: React.RefObje
 }
 
 // ListView is an open list: back to the lists, its name, where it is, the star and its actions in
-// the panel's header; under it, the form adding a todo and its todos, the done ones folded.
+// its toolbar at the top of the panel; under it, the form adding a todo and its todos, the done
+// ones folded.
 export default function ListView({listId, channel}: {listId: string; channel?: Channel}) {
     const intl = useIntl();
     const me = useSelector(getCurrentUserId);
@@ -92,7 +93,6 @@ export default function ListView({listId, channel}: {listId: string; channel?: C
             onClick={closeList}
         >
             <Icon name='back'/>
-            <Icon name='checkbox'/>
         </button>
     );
 
@@ -105,7 +105,7 @@ export default function ListView({listId, channel}: {listId: string; channel?: C
         }
         return (
             <div className={cx('app-panel') + ' amt-panel'}>
-                <HeadPortal>{back}</HeadPortal>
+                <TodoToolbar>{back}</TodoToolbar>
                 <div className={failure ? 'amt-error' : cx('empty') + ' amt-empty'}>{failure || '…'}</div>
             </div>
         );
@@ -133,7 +133,7 @@ export default function ListView({listId, channel}: {listId: string; channel?: C
 
     return (
         <div className={cx('app-panel') + ' amt-panel'}>
-            <HeadPortal>
+            <TodoToolbar>
                 {back}
                 <button
                     ref={tileRef}
@@ -159,7 +159,7 @@ export default function ListView({listId, channel}: {listId: string; channel?: C
                     label={intl.formatMessage(messages.listMenu)}
                     actions={actions}
                 />
-            </HeadPortal>
+            </TodoToolbar>
             {pickingIcon && (
                 <IconPicker
                     anchor={tileRef}
