@@ -30,7 +30,6 @@ const REMINDER_IDLE = 60 * 60 * 1000;
 
 const title = <FormattedMessage {...messages.app}/>;
 
-
 export default class Plugin implements PluginClass {
     private onActivity?: () => void;
 

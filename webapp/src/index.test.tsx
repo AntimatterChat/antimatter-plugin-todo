@@ -79,7 +79,10 @@ test('list of lists: the channel\'s lists with what is left to do and what is ov
     renderWithHost(<TodoPanel/>, {channel});
 
     expect(await screen.findByText('Launch')).toBeInTheDocument();
-    expect(screen.getByText('Todo')).toBeInTheDocument();
+
+    // The host's header names the app: the lists have no toolbar of their own.
+    expect(screen.queryByText('Todo')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('todo-toolbar')).not.toBeInTheDocument();
     expect(screen.getByText('3 open')).toBeInTheDocument();
     expect(screen.getByText('Overdue')).toBeInTheDocument();
     expect(screen.queryByText('Retro')).not.toBeInTheDocument();
