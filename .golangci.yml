@@ -28,6 +28,9 @@ linters:
       enable-all: true
     misspell:
       locale: US
+      # British spelling: misspell's US locale would turn it into "canceled"
+      ignore-rules:
+        - cancelled
   exclusions:
     generated: lax
     presets:

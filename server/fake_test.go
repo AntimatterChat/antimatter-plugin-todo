@@ -251,7 +251,7 @@ func (f *fakeAPI) HasPermissionToTeam(userID, team string, permission *model.Per
 	return slices.Contains(f.systemAdmins, userID)
 }
 
-func (f *fakeAPI) HasPermissionTo(userID string, permission *model.Permission) bool {
+func (f *fakeAPI) HasPermissionTo(userID string, _ *model.Permission) bool {
 	return slices.Contains(f.systemAdmins, userID)
 }
 

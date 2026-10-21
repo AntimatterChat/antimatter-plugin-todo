@@ -360,9 +360,9 @@ func (p *Plugin) CreateList(userID string, req listRequest) (*ListDetail, error)
 	now := model.GetMillis()
 	list := &TodoList{ID: model.NewId(), Name: name, Icon: icon, ChannelID: req.ChannelID, OwnerID: userID, CreateAt: now, UpdateAt: now}
 	if req.ChannelID != "" {
-		channel, err := p.memberChannel(userID, req.ChannelID)
-		if err != nil {
-			return nil, err
+		channel, channelErr := p.memberChannel(userID, req.ChannelID)
+		if channelErr != nil {
+			return nil, channelErr
 		}
 		if !channel.CanEdit {
 			return nil, newAPIError(http.StatusForbidden, "you can't add lists to this channel")

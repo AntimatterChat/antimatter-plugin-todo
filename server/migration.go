@@ -195,9 +195,9 @@ func (p *Plugin) migratePersonal(userID string) error {
 		items := make([]*Item, 0, len(refs))
 		for _, ref := range refs {
 			var issue Issue
-			found, err := kvGetJSON(p.API, issueKey(ref.IssueID), &issue)
-			if err != nil {
-				return err
+			found, getErr := kvGetJSON(p.API, issueKey(ref.IssueID), &issue)
+			if getErr != nil {
+				return getErr
 			}
 			if !found {
 				p.API.LogWarn("A todo to migrate is missing", "user_id", userID, "issue_id", ref.IssueID)
@@ -221,9 +221,9 @@ func (p *Plugin) migratePersonal(userID string) error {
 				// Accepted from someone: linked to their copy, which their "Sent by you" shows
 				item.CreatorID, item.FromUserID, item.FromIssueID = ref.ForeignUserID, ref.ForeignUserID, ref.ForeignIssueID
 				issue.ListID = list.ID
-				data, err := json.Marshal(&issue)
-				if err != nil {
-					return err
+				data, marshalErr := json.Marshal(&issue)
+				if marshalErr != nil {
+					return marshalErr
 				}
 				if appErr := p.API.KVSet(issueKey(issue.ID), data); appErr != nil {
 					return appErr

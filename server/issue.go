@@ -47,9 +47,12 @@ func newIssue(message, postPermalink, description, postID string) *Issue {
 	}
 }
 
+// nothingToDo is what the bot says of an empty list.
+const nothingToDo = "Nothing to do!"
+
 func issuesListToString(issues []*ExtendedIssue) string {
 	if len(issues) == 0 {
-		return "Nothing to do!"
+		return nothingToDo
 	}
 
 	str := "\n\n"
@@ -79,7 +82,7 @@ func dueToString(due, today string) string {
 // itemsToString lists todos, for the bot's messages.
 func itemsToString(items []*Item, today string) string {
 	if len(items) == 0 {
-		return "Nothing to do!"
+		return nothingToDo
 	}
 	str := ""
 	for _, item := range items {

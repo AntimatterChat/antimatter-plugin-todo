@@ -121,8 +121,8 @@ func TestChannelListRights(t *testing.T) {
 			_, createErr := p.CreateList(c.userID, listRequest{Name: str("Another"), ChannelID: c.channelID})
 			_, renameErr := p.UpdateList(c.userID, c.listID, listRequest{Name: str("Renamed")})
 			doneErr := func() error {
-				_, err := p.UpdateItem(c.userID, c.listID, list.Items[0].ID, itemRequest{Done: yes()})
-				return err
+				_, updateErr := p.UpdateItem(c.userID, c.listID, list.Items[0].ID, itemRequest{Done: yes()})
+				return updateErr
 			}()
 			if c.edit {
 				assert.NoError(t, err)
