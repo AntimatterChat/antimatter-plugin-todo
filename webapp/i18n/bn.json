@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "এই কথোপকথনের সবাইয়ের সাথে শেয়ার করা",
   "todo.scope.personal": "ব্যক্তিগত",
   "todo.scope.personalTip": "ব্যক্তিগত: শুধুমাত্র আপনি এটি দেখতে পাবেন",
-  "todo.scope.sharedTip": "~{channel}-এর সবাইয়ের সাথে শেয়ার করা",
+  "todo.scope.sharedTip": "#{channel}-এর সবাইয়ের সাথে শেয়ার করা",
   "todo.searchPeople": "ব্যক্তি খুঁজুন",
   "todo.sendButton": "পাঠান",
   "todo.sendTo": "পাঠান…",

@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "Partajată cu toți participanții la această conversație",
   "todo.scope.personal": "Personal",
   "todo.scope.personalTip": "Personal: doar tu o poți vedea",
-  "todo.scope.sharedTip": "Partajată cu toți membrii ~{channel}",
+  "todo.scope.sharedTip": "Partajată cu toți membrii #{channel}",
   "todo.searchPeople": "Caută persoane",
   "todo.sendButton": "Trimite",
   "todo.sendTo": "Trimite către…",

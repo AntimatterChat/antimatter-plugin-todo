@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "با همهٔ اعضای این مکالمه به اشتراک گذاشته می‌شود",
   "todo.scope.personal": "شخصی",
   "todo.scope.personalTip": "شخصی: فقط شما می‌توانید آن را ببینید",
-  "todo.scope.sharedTip": "با همهٔ اعضای ~{channel} به اشتراک گذاشته می‌شود",
+  "todo.scope.sharedTip": "با همهٔ اعضای #{channel} به اشتراک گذاشته می‌شود",
   "todo.searchPeople": "جستجوی افراد",
   "todo.sendButton": "ارسال",
   "todo.sendTo": "ارسال به…",

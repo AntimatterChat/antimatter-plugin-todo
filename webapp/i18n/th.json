@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "แชร์กัับทุกคนในบทสนทนาน่ี",
   "todo.scope.personal": "ส่วนตัว",
   "todo.scope.personalTip": "ส่วนตัว: เพีียงคุณเท่านั้ท่ีจะเห็น",
-  "todo.scope.sharedTip": "แชร์กัับทุกคนใน ~{channel}",
+  "todo.scope.sharedTip": "แชร์กัับทุกคนใน #{channel}",
   "todo.searchPeople": "ค้นหาคน",
   "todo.sendButton": "ส่ง",
   "todo.sendTo": "ส่่งถิง…",

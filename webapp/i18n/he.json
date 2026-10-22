@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "משותף עם כולם בשיחה הזו",
   "todo.scope.personal": "אישית",
   "todo.scope.personalTip": "אישית: רק אתה יכול לראות אותה",
-  "todo.scope.sharedTip": "משותף עם כולם ב~{channel}",
+  "todo.scope.sharedTip": "משותף עם כולם ב#{channel}",
   "todo.searchPeople": "חיפוש אנשים",
   "todo.sendButton": "שליחה",
   "todo.sendTo": "שליחה אל…",

@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "この会話の全員と共有されます",
   "todo.scope.personal": "個人用",
   "todo.scope.personalTip": "個人用: あなた自身のみが確認できます",
-  "todo.scope.sharedTip": "~{channel} の全員と共有されます",
+  "todo.scope.sharedTip": "#{channel} の全員と共有されます",
   "todo.searchPeople": "人を検索",
   "todo.sendButton": "送信",
   "todo.sendTo": "送信先…",

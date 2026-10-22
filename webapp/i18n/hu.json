@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "Megosztva ezzel a beszélgetéssel",
   "todo.scope.personal": "Személyes",
   "todo.scope.personalTip": "Személyes: csak te látod",
-  "todo.scope.sharedTip": "Megosztva a(z) ~{channel} csatorna minden tagjával",
+  "todo.scope.sharedTip": "Megosztva a(z) #{channel} csatorna minden tagjával",
   "todo.searchPeople": "Személyek keresése",
   "todo.sendButton": "Küldés",
   "todo.sendTo": "Küldés ide…",

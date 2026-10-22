@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "Μοιρασμένο με όλους σε αυτή τη συζήτηση",
   "todo.scope.personal": "Προσωπικό",
   "todo.scope.personalTip": "Προσωπικό: μόνο εσείς μπορείτε να το δείτε",
-  "todo.scope.sharedTip": "Μοιρασμένο με όλους στο ~{channel}",
+  "todo.scope.sharedTip": "Μοιρασμένο με όλους στο #{channel}",
   "todo.searchPeople": "Αναζήτηση ατόμων",
   "todo.sendButton": "Αποστολή",
   "todo.sendTo": "Αποστολή σε…",

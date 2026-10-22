@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "இந்த உரையாடலில் உள்ள அனைவருடனும் பகிரப்பட்டது",
   "todo.scope.personal": "தனிப்பட்ட",
   "todo.scope.personalTip": "தனிப்பட்ட: நீங்கள் மட்டுமே பார்க்க முடியும்",
-  "todo.scope.sharedTip": "~{channel} இல் உள்ள அனைவருடனும் பகிரப்பட்டது",
+  "todo.scope.sharedTip": "#{channel} இல் உள்ள அனைவருடனும் பகிரப்பட்டது",
   "todo.searchPeople": "மக்களை தேடு",
   "todo.sendButton": "அனுப்பு",
   "todo.sendTo": "அனுப்ப…",

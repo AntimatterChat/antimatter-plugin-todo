@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "與此討論串中的所有成員共用",
   "todo.scope.personal": "個人",
   "todo.scope.personalTip": "個人：只有您能查看",
-  "todo.scope.sharedTip": "與 ~{channel} 中的所有成員共用",
+  "todo.scope.sharedTip": "與 #{channel} 中的所有成員共用",
   "todo.searchPeople": "搜尋人員",
   "todo.sendButton": "發送",
   "todo.sendTo": "發送給…",

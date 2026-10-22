@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "इस बातचीत के सभी सदस्यों के साथ साझा",
   "todo.scope.personal": "निजी",
   "todo.scope.personalTip": "निजी: केवल आप ही इसे देख सकते हैं",
-  "todo.scope.sharedTip": "~{channel} के सभी सदस्यों के साथ साझा",
+  "todo.scope.sharedTip": "#{channel} के सभी सदस्यों के साथ साझा",
   "todo.searchPeople": "लोग खोजें",
   "todo.sendButton": "भेजें",
   "todo.sendTo": "भेजें…",

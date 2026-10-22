@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "Bu konudaki herkesle paylaşılır",
   "todo.scope.personal": "Kişisel",
   "todo.scope.personalTip": "Kişisel: yalnızca siz görebilirsiniz",
-  "todo.scope.sharedTip": "~{channel} kanalındaki herkesle paylaşılır",
+  "todo.scope.sharedTip": "#{channel} kanalındaki herkesle paylaşılır",
   "todo.searchPeople": "Kişi ara",
   "todo.sendButton": "Gönder",
   "todo.sendTo": "Gönder…",

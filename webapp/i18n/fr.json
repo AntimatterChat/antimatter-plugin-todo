@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "Partagé avec tout le monde dans cette conversation",
   "todo.scope.personal": "Personnel",
   "todo.scope.personalTip": "Personnel : seul vous pouvez le voir",
-  "todo.scope.sharedTip": "Partagé avec tout le monde dans ~{channel}",
+  "todo.scope.sharedTip": "Partagé avec tout le monde dans #{channel}",
   "todo.searchPeople": "Rechercher des personnes",
   "todo.sendButton": "Envoyer",
   "todo.sendTo": "Envoyer à…",

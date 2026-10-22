@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "Delas med alla i denna konversation",
   "todo.scope.personal": "Personlig",
   "todo.scope.personalTip": "Personlig: endast du kan se den",
-  "todo.scope.sharedTip": "Delas med alla i ~{channel}",
+  "todo.scope.sharedTip": "Delas med alla i #{channel}",
   "todo.searchPeople": "Sök personer",
   "todo.sendButton": "Skicka",
   "todo.sendTo": "Skicka till…",

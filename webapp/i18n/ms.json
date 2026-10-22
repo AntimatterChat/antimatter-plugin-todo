@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "Dikongsi dengan semua orang dalam perbualan ini",
   "todo.scope.personal": "Peribadi",
   "todo.scope.personalTip": "Peribadi: hanya anda yang boleh melihatnya",
-  "todo.scope.sharedTip": "Dikongsi dengan semua orang dalam ~{channel}",
+  "todo.scope.sharedTip": "Dikongsi dengan semua orang dalam #{channel}",
   "todo.searchPeople": "Cari orang",
   "todo.sendButton": "Hantar",
   "todo.sendTo": "Hantar kepada…",

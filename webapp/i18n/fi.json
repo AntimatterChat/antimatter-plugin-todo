@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "Jaettu tämän keskustelun kaikille",
   "todo.scope.personal": "Henkilökohtainen",
   "todo.scope.personalTip": "Henkilökohtainen: vain sinä näet sen",
-  "todo.scope.sharedTip": "Jaettu ~{channel}:n kaikille",
+  "todo.scope.sharedTip": "Jaettu #{channel}:n kaikille",
   "todo.searchPeople": "Hae henkilöitä",
   "todo.sendButton": "Lähetä",
   "todo.sendTo": "Lähetä…",

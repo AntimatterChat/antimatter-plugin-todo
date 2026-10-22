@@ -106,7 +106,7 @@ test('tabs: this channel, the favorites (saying where each list is) and mine (wi
     fireEvent.click(screen.getByRole('tab', {name: 'Favourites'}));
     expect(await screen.findByText('Groceries')).toBeInTheDocument();
     expect(screen.getByText('Personal')).toBeInTheDocument();
-    expect(screen.getByTitle('Shared with everyone in ~Firmware')).toBeInTheDocument();
+    expect(screen.getByTitle('Shared with everyone in #Firmware')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('tab', {name: /^Mine/}));
     expect(await screen.findByText('My todos')).toBeInTheDocument();
@@ -129,7 +129,7 @@ test('open list: back, its name, where it is, the star and its menu; a todo chec
     expect(await screen.findByText('Order the bulbs')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Launch')).toBeInTheDocument();
     expect(screen.queryByText('Todo')).not.toBeInTheDocument();
-    expect(screen.getByRole('img', {name: 'Shared with everyone in ~Firmware'})).toBeInTheDocument();
+    expect(screen.getByRole('img', {name: 'Shared with everyone in #Firmware'})).toBeInTheDocument();
     expect(screen.getByRole('button', {name: 'Add to favourites'})).toBeInTheDocument();
     expect(screen.getByRole('button', {name: 'List actions'})).toBeInTheDocument();
     expect(screen.getByText('Assigned to Bob Ross')).toBeInTheDocument();

@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "이 대화의 모든 사람과 공유됩니다",
   "todo.scope.personal": "개인",
   "todo.scope.personalTip": "개인: 오직 나만 볼 수 있습니다",
-  "todo.scope.sharedTip": "~{channel}의 모든 사람과 공유됩니다",
+  "todo.scope.sharedTip": "#{channel}의 모든 사람과 공유됩니다",
   "todo.searchPeople": "사람 검색",
   "todo.sendButton": "보내기",
   "todo.sendTo": "보낼 대상…",

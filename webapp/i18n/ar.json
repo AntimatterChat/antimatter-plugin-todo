@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "مُشارَكة مع الجميع في هذه المحادثة",
   "todo.scope.personal": "شخصي",
   "todo.scope.personalTip": "شخصي: لا يمكن لأي شخصٍ غيرك رؤيتها",
-  "todo.scope.sharedTip": "مُشارَكة مع الجميع في ~{channel}",
+  "todo.scope.sharedTip": "مُشارَكة مع الجميع في #{channel}",
   "todo.searchPeople": "البحث عن أشخاص",
   "todo.sendButton": "إرسال",
   "todo.sendTo": "إرسال إلى…",

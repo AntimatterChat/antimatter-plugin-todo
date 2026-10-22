@@ -82,7 +82,7 @@
   "todo.scope.conversationTip": "Ibinabahagi sa lahat sa usapang ito",
   "todo.scope.personal": "Personal",
   "todo.scope.personalTip": "Personal: ikaw lang ang makakakita nito",
-  "todo.scope.sharedTip": "Ibinabahagi sa lahat sa ~{channel}",
+  "todo.scope.sharedTip": "Ibinabahagi sa lahat sa #{channel}",
   "todo.searchPeople": "Maghanap ng tao",
   "todo.sendButton": "Ipadala",
   "todo.sendTo": "Ipadala sa…",

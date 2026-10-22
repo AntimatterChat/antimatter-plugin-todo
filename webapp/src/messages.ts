@@ -49,7 +49,7 @@ export const messages = defineMessages({
     scopePersonalTip: {id: 'todo.scope.personalTip', defaultMessage: 'Personal: only you can see it', description: 'Tooltip of the chip of a personal list'},
     scopeConversation: {id: 'todo.scope.conversation', defaultMessage: 'Conversation', description: 'Chip of a list of a direct or group message'},
     scopeConversationTip: {id: 'todo.scope.conversationTip', defaultMessage: 'Shared with everyone in this conversation', description: 'Tooltip of the chip of a conversation\'s list'},
-    scopeSharedTip: {id: 'todo.scope.sharedTip', defaultMessage: 'Shared with everyone in ~{channel}', description: 'Tooltip of the chip of a channel\'s list'},
+    scopeSharedTip: {id: 'todo.scope.sharedTip', defaultMessage: 'Shared with everyone in #{channel}', description: 'Tooltip of the chip of a channel\'s list'},
     favoriteAdd: {id: 'todo.favorite.add', defaultMessage: 'Add to favourites', description: 'Star button of a todo list'},
     favoriteRemove: {id: 'todo.favorite.remove', defaultMessage: 'Remove from favourites', description: 'Star button of a todo list in the favourites'},
 
