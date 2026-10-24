@@ -12,7 +12,7 @@ import TodoPanel from './components/todo_panel';
 import TodoPost from './components/todo_post';
 import manifest from './manifest';
 import {messages} from './messages';
-import {openDraft, refreshAfterChange, refreshIndex, refreshRequests, setShowPanel} from './state';
+import {openDraft, refreshAfterChange, refreshLoaded, refreshRequests, setShowPanel} from './state';
 import type {PluginClass, PluginRegistry, PluginStore, RightHandSidebarRegistration} from './types/host';
 import Icon from './ui/icon';
 import {registerTranslations} from './translations';
@@ -89,7 +89,7 @@ export default class Plugin implements PluginClass {
         });
         registry.registerReconnectHandler(() => {
             refreshRequests();
-            refreshIndex('mine');
+            refreshLoaded();
         });
 
         // The server sends the daily reminder when the lists are loaded for it: now, and when the

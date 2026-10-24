@@ -153,6 +153,14 @@ export function refreshAfterChange(listId: string, channelId?: string) {
     }
 }
 
+// refreshLoaded refreshes every index and open list the user looked at, after a reconnection:
+// only the requests and the "mine" tab used to be reloaded, so a channel's tab or an open list kept
+// the state it had before the websocket dropped, missing the changes made meanwhile.
+export function refreshLoaded() {
+    (Object.keys(state.indexes) as IndexKey[]).forEach((key) => refreshIndex(key));
+    Object.keys(state.details).forEach((listId) => refreshList(listId));
+}
+
 // The panel ---------------------------------------------------------------------------------------
 
 export function setView(view: View) {
