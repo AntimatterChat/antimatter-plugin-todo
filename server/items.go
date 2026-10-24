@@ -455,7 +455,7 @@ func (p *Plugin) AssignedTodos(userID string) ([]*AssignedTodo, error) {
 	}
 	result := []*AssignedTodo{}
 	items := map[string][]*Item{}
-	stale := false
+	stale := map[assignedRef]bool{}
 	for _, ref := range refs {
 		if err := p.migrateChannel(ref.ChannelID); err != nil {
 			return nil, err
@@ -465,7 +465,7 @@ func (p *Plugin) AssignedTodos(userID string) ([]*AssignedTodo, error) {
 			return nil, err
 		}
 		if list == nil {
-			stale = true
+			stale[ref] = true
 			continue
 		}
 		rights, err := p.listRights(userID, list)
@@ -473,7 +473,9 @@ func (p *Plugin) AssignedTodos(userID string) ([]*AssignedTodo, error) {
 			return nil, err
 		}
 		if !rights.Read || list.ArchivedAt != 0 {
-			stale = stale || !rights.Read
+			if !rights.Read {
+				stale[ref] = true
+			}
 			continue
 		}
 		todos, ok := items[list.ID]
@@ -485,7 +487,7 @@ func (p *Plugin) AssignedTodos(userID string) ([]*AssignedTodo, error) {
 		}
 		i := slices.IndexFunc(todos, func(t *Item) bool { return t.ID == ref.TodoID })
 		if i < 0 || todos[i].Done() || todos[i].AssigneeID != userID {
-			stale = true
+			stale[ref] = true
 			continue
 		}
 		info := p.listInfo(userID, list, rights, nil, nil)
@@ -499,28 +501,18 @@ func (p *Plugin) AssignedTodos(userID string) ([]*AssignedTodo, error) {
 			TeamName:       info.TeamName,
 		})
 	}
-	if stale {
-		p.pruneAssigned(userID, result, refs)
+	if len(stale) > 0 {
+		p.pruneAssigned(userID, stale)
 	}
 	return result, nil
 }
 
-// pruneAssigned forgets the assignments that aren't anymore, keeping those of archived lists, which
-// come back when they're unarchived.
-func (p *Plugin) pruneAssigned(userID string, kept []*AssignedTodo, refs []assignedRef) {
-	keep := map[string]bool{}
-	for _, item := range kept {
-		keep[item.ID] = true
-	}
-	for _, ref := range refs {
-		if list, err := p.getList(ref.listID()); err == nil && list != nil && list.ArchivedAt != 0 {
-			if rights, err := p.listRights(userID, list); err == nil && rights.Read {
-				keep[ref.TodoID] = true
-			}
-		}
-	}
+// pruneAssigned drops only the refs found stale: a todo assigned since they were read must stay
+// listed. Archived lists aren't marked stale, so their assignments come back when they're
+// unarchived.
+func (p *Plugin) pruneAssigned(userID string, stale map[assignedRef]bool) {
 	if _, err := updateKV(p.API, assignedKey(userID), func(refs *[]assignedRef) error {
-		*refs = slices.DeleteFunc(*refs, func(r assignedRef) bool { return !keep[r.TodoID] })
+		*refs = slices.DeleteFunc(*refs, func(r assignedRef) bool { return stale[r] })
 		return nil
 	}); err != nil {
 		p.API.LogWarn("Could not prune the assigned todos", "error", err.Error())
