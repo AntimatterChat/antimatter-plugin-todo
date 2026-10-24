@@ -4,6 +4,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -162,6 +163,29 @@ func TestAssignmentsOfADeletedList(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, assigned)
 	assert.JSONEq(t, "[]", string(api.kv[assignedKey(bob)]))
+}
+
+// TestPruneAssignedKeepsRefsAssignedMeanwhile is a regression test for the race AssignedTodos used
+// to lose: pruneAssigned must drop only the refs it found stale, not recompute the kept set from its
+// own result, which would also drop a todo assigned to the user between the index read and this
+// prune (it isn't in the stale map, since AssignedTodos never looked at it).
+func TestPruneAssignedKeepsRefsAssignedMeanwhile(t *testing.T) {
+	p, api := newTestPlugin(t)
+	launch := newList(t, p, alice, town, "Launch")
+	todo, err := p.AddItem(alice, launch.ID, itemRequest{Message: str("Ship 2.4"), AssigneeID: str(bob)})
+	require.NoError(t, err)
+
+	stale := assignedRef{ChannelID: town, ListID: launch.ID, TodoID: todo.ID}
+	concurrent := assignedRef{ChannelID: town, ListID: launch.ID, TodoID: "concurrently-assigned-todo-id"}
+	data, err := json.Marshal([]assignedRef{stale, concurrent})
+	require.NoError(t, err)
+	api.kv[assignedKey(bob)] = data
+
+	p.pruneAssigned(bob, map[assignedRef]bool{stale: true})
+
+	var left []assignedRef
+	require.NoError(t, json.Unmarshal(api.kv[assignedKey(bob)], &left))
+	assert.Equal(t, []assignedRef{concurrent}, left, "only the stale ref is dropped; one assigned meanwhile stays")
 }
 
 func TestTodosFromMessages(t *testing.T) {
